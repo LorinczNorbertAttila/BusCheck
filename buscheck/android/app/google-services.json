@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "14039234224",
+    "project_id": "busappdatabase-845d0",
+    "storage_bucket": "busappdatabase-845d0.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:14039234224:android:19b21365e641a5fb426d75",
+        "android_client_info": {
+          "package_name": "com.example.buscheck"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCpw1tdAQNsjqdBaSdqJ3uTRnqc7gWSLB8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
