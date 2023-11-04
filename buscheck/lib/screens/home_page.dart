@@ -17,11 +17,14 @@ class _HomeState extends State<Home> {
     double width = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text(
+        iconTheme: Theme.of(context).iconTheme,
+        title: Text(
           'Bus Check',
-          style: TextStyle(fontFamily: 'LilitaOne', fontSize: 25),
+          style: TextStyle(
+              fontFamily: 'LilitaOne',
+              fontSize: 25,
+              color: Theme.of(context).primaryColor),
         ),
         backgroundColor: Colors.cyan[400],
         leading: const Icon(
@@ -33,48 +36,37 @@ class _HomeState extends State<Home> {
       endDrawer: const Menu(),
       body: Column(
         children: [
-          const SearchBar(
-            leading: Icon(Icons.search),
-            //backgroundColor: Colors.grey,
-          ),
-          Row(
-            children: [
-              Padding(
-                padding: EdgeInsets.fromLTRB(
-                    width * 0.1, height * 0.02, width * 0.095, height * 0.02),
-                child: FloatingActionButton(
+          Padding(
+            padding: EdgeInsets.only(top: height * 0.04, bottom: width * 0.04),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                FloatingActionButton(
                   onPressed: null,
                   backgroundColor: Colors.cyan[400],
-                  child: const Bus(
-                    color: Colors.white,
+                  child: Bus(
                     width: 35,
+                    color: Theme.of(context).primaryColor,
                   ),
                 ),
-              ),
-              Padding(
-                padding: EdgeInsets.fromLTRB(
-                    width * 0.1, height * 0.02, width * 0.095, height * 0.02),
-                child: FloatingActionButton(
+                FloatingActionButton(
                   onPressed: null,
                   backgroundColor: Colors.cyan[400],
-                  child: const Icon(
+                  child: Icon(
                     Icons.local_police_outlined,
                     size: 35,
+                    color: Theme.of(context).primaryColor,
                   ),
                 ),
-              ),
-              Padding(
-                padding: EdgeInsets.fromLTRB(
-                    width * 0.1, height * 0.02, width * 0.1, height * 0.02),
-                child: FloatingActionButton(
+                FloatingActionButton(
                     onPressed: null,
                     backgroundColor: Colors.cyan[400],
-                    child: const BusStop(
-                      color: Colors.white,
+                    child: BusStop(
                       width: 35,
-                    )),
-              )
-            ],
+                      color: Theme.of(context).primaryColor,
+                    ))
+              ],
+            ),
           )
         ],
       ),
