@@ -25,8 +25,8 @@ class DatabaseService {
       Map<String, dynamic> data = doc.data() as Map<String, dynamic>; 
       return Brew(
       name: data['name'] ?? '', 
-      email: data['strength'] ?? '',
-      password: data['sugars'] ?? ''
+      email: data['email'] ?? '',
+      password: data['password'] ?? ''
       );
     }).toList();
   }
