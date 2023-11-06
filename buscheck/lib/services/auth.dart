@@ -1,5 +1,5 @@
+import 'package:buscheck/services/database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-//import 'package:buscheck/services/database.dart';
 import 'package:buscheck/models/user.dart' as LocalUser;
 
 import 'package:logger/logger.dart';
@@ -63,7 +63,7 @@ class AuthService{
       UserCredential result = await FirebaseAuth.instance.createUserWithEmailAndPassword(email: email, password: password);
       User? user = result.user;
       // create a new document for the user with the uid
-      //await DatabaseService(uid: user.uid).updateUserData('0','new crew member', 100);
+      await DatabaseService(uid: user!.uid).updateUserData('new member','new email','new password');
       
       return _userFromUser(user);
     } catch (error) {
