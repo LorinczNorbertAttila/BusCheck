@@ -2,9 +2,14 @@ import 'package:advanced_icon/advanced_icon.dart';
 import 'package:buscheck/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
 
-class Menu extends StatelessWidget {
+class Menu extends StatefulWidget {
   const Menu({super.key});
 
+  @override
+  State<Menu> createState() => _MenuState();
+}
+
+class _MenuState extends State<Menu> {
   @override
   Widget build(BuildContext context) {
     return Drawer(
@@ -16,7 +21,7 @@ class Menu extends StatelessWidget {
               size: 30,
               color: Theme.of(context).colorScheme.primary,
             ),
-            title: Text(
+            title: const Text(
               'Sign in/Registartion',
               style: TextStyle(fontFamily: 'LilitaOne', fontSize: 22),
             ),
