@@ -38,6 +38,8 @@ dependencies:
   iconoir_flutter: ^6.11.0
   provider: ^6.0.5
   advanced_icon: ^0.1.2
+  firebase_auth: ^4.12.1
+  logger: ^2.0.2+1
 
 dev_dependencies:
   flutter_test:
