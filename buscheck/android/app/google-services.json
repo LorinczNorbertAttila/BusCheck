@@ -1,14 +1,13 @@
 {
   "project_info": {
-    "project_number": "14039234224",
-    "firebase_url": "https://busappdatabase-845d0-default-rtdb.firebaseio.com",
-    "project_id": "busappdatabase-845d0",
-    "storage_bucket": "busappdatabase-845d0.appspot.com"
+    "project_number": "1081765602955",
+    "project_id": "buscheck-5b163",
+    "storage_bucket": "buscheck-5b163.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:14039234224:android:19b21365e641a5fb426d75",
+        "mobilesdk_app_id": "1:1081765602955:android:49e022e418528a559b168e",
         "android_client_info": {
           "package_name": "com.example.buscheck"
         }
@@ -16,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyCpw1tdAQNsjqdBaSdqJ3uTRnqc7gWSLB8"
+          "current_key": "AIzaSyBOfyMUL_OyWXa4TVyBXsP3KmZNJTbhuVM"
         }
       ],
       "services": {
