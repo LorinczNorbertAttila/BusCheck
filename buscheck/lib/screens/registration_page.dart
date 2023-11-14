@@ -1,3 +1,4 @@
+import 'package:buscheck/screens/home_page.dart';
 import 'package:buscheck/services/auth.dart';
 import 'package:buscheck/shared/constans.dart';
 import 'package:flutter/material.dart';
@@ -24,17 +25,37 @@ class _RegistrationState extends State<Registration> {
       appBar: AppBar(
         backgroundColor: Colors.cyan[400],
         elevation: 0.0,
-        title: const Text('Register'),
+        title: const Text(
+          'Register',
+          style: TextStyle(fontFamily: 'LilitaOne', fontSize: 22),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.push(context,
+                MaterialPageRoute(builder: (cosntext) => const Home()));
+          },
+        ),
       ),
       body: Container(
         padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 50.0),
         child: Form(
           key: _formKey,
           child: Column(
-            children: <Widget>[
+            children: [
               const SizedBox(height: 20.0),
               TextFormField(
-                decoration: textInputDecoration.copyWith(hintText: 'Email'),
+                decoration: InputDecoration(
+                  icon: Icon(
+                    Icons.email,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  hintText: 'Email',
+                  border: const OutlineInputBorder(),
+                  hintStyle: TextStyle(
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
                 validator: (val) => val!.isEmpty ? 'Enter an email' : null,
                 onChanged: (val) {
                   setState(() => email = val);
@@ -42,7 +63,17 @@ class _RegistrationState extends State<Registration> {
               ),
               const SizedBox(height: 20.0),
               TextFormField(
-                decoration: textInputDecoration.copyWith(hintText: 'Password'),
+                decoration: InputDecoration(
+                  icon: Icon(
+                    Icons.key,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  hintText: 'Password',
+                  border: const OutlineInputBorder(),
+                  hintStyle: TextStyle(
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
                 obscureText: true,
                 validator: (val) =>
                     val!.length < 6 ? 'Enter a password 6+ chars long' : null,
@@ -57,7 +88,7 @@ class _RegistrationState extends State<Registration> {
                   ),
                   child: const Text(
                     'Register',
-                    style: TextStyle(fontFamily: 'LilitaOne', fontSize: 22),
+                    style: TextStyle(fontFamily: 'LilitaOne', fontSize: 20),
                   ),
                   onPressed: () async {
                     if (_formKey.currentState!.validate()) {
@@ -74,7 +105,29 @@ class _RegistrationState extends State<Registration> {
               Text(
                 error,
                 style: const TextStyle(color: Colors.red, fontSize: 14.0),
-              )
+              ),
+              const SizedBox(height: 12.0),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    'Do you have an account? ',
+                    style: TextStyle(fontFamily: 'LilitaOne', fontSize: 15),
+                  ),
+                  InkWell(
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (cosntext) => const SignIn()));
+                    },
+                    child: const Text(
+                      'SIGN IN',
+                      style: TextStyle(fontFamily: 'LilitaOne', fontSize: 15),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
@@ -104,17 +157,37 @@ class _SignInState extends State<SignIn> {
       appBar: AppBar(
         backgroundColor: Colors.cyan[400],
         elevation: 0.0,
-        title: const Text('Sign in'),
+        title: const Text(
+          'Sign in',
+          style: TextStyle(fontFamily: 'LilitaOne', fontSize: 22),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.push(context,
+                MaterialPageRoute(builder: (cosntext) => const Home()));
+          },
+        ),
       ),
       body: Container(
         padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 50.0),
         child: Form(
           key: _formKey,
           child: Column(
-            children: <Widget>[
+            children: [
               const SizedBox(height: 20.0),
               TextFormField(
-                decoration: textInputDecoration.copyWith(hintText: 'Email'),
+                decoration: InputDecoration(
+                  icon: Icon(
+                    Icons.email,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  hintText: 'Email',
+                  border: const OutlineInputBorder(),
+                  hintStyle: TextStyle(
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
                 validator: (val) => val!.isEmpty ? 'Enter an email' : null,
                 onChanged: (val) {
                   setState(() => email = val);
@@ -123,7 +196,17 @@ class _SignInState extends State<SignIn> {
               const SizedBox(height: 20.0),
               TextFormField(
                 obscureText: true,
-                decoration: textInputDecoration.copyWith(hintText: 'Password'),
+                decoration: InputDecoration(
+                  icon: Icon(
+                    Icons.key,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  hintText: 'Password',
+                  border: const OutlineInputBorder(),
+                  hintStyle: TextStyle(
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
                 validator: (val) =>
                     val!.length < 6 ? 'Enter a password 6+ chars long' : null,
                 onChanged: (val) {
@@ -137,7 +220,7 @@ class _SignInState extends State<SignIn> {
                   ),
                   child: const Text(
                     'Sign In',
-                    style: TextStyle(fontFamily: 'LilitaOne', fontSize: 22),
+                    style: TextStyle(fontFamily: 'LilitaOne', fontSize: 20),
                   ),
                   onPressed: () async {
                     if (_formKey.currentState!.validate()) {

@@ -22,7 +22,7 @@ class myThemes {
   static final lightTheme = ThemeData(
       scaffoldBackgroundColor: Colors.white,
       primaryColor: Colors.white,
-      colorScheme: const ColorScheme.light(primary: Colors.grey),
+      colorScheme: const ColorScheme.light(primary: Colors.black),
       iconTheme: const IconThemeData(color: Colors.white));
 }
 
