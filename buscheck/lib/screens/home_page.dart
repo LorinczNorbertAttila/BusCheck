@@ -13,8 +13,8 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
-    double height = MediaQuery.of(context).size.height;
-    double width = MediaQuery.of(context).size.width;
+    //double height = MediaQuery.of(context).size.height;
+    //double width = MediaQuery.of(context).size.width;
 
     return Scaffold(
       appBar: AppBar(
@@ -35,38 +35,39 @@ class _HomeState extends State<Home> {
       ),
       endDrawer: const Menu(),
       body: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          Padding(
-            padding: EdgeInsets.only(top: height * 0.04, bottom: width * 0.04),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                FloatingActionButton(
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              FloatingActionButton(
+                heroTag: null,
+                onPressed: null,
+                backgroundColor: Colors.cyan[400],
+                child: Bus(
+                  width: 35,
+                  color: Theme.of(context).primaryColor,
+                ),
+              ),
+              FloatingActionButton(
+                heroTag: null,
+                onPressed: null,
+                backgroundColor: Colors.cyan[400],
+                child: Icon(
+                  Icons.local_police_outlined,
+                  size: 35,
+                  color: Theme.of(context).primaryColor,
+                ),
+              ),
+              FloatingActionButton(
+                  heroTag: null,
                   onPressed: null,
                   backgroundColor: Colors.cyan[400],
-                  child: Bus(
+                  child: BusStop(
                     width: 35,
                     color: Theme.of(context).primaryColor,
-                  ),
-                ),
-                FloatingActionButton(
-                  onPressed: null,
-                  backgroundColor: Colors.cyan[400],
-                  child: Icon(
-                    Icons.local_police_outlined,
-                    size: 35,
-                    color: Theme.of(context).primaryColor,
-                  ),
-                ),
-                FloatingActionButton(
-                    onPressed: null,
-                    backgroundColor: Colors.cyan[400],
-                    child: BusStop(
-                      width: 35,
-                      color: Theme.of(context).primaryColor,
-                    ))
-              ],
-            ),
+                  ))
+            ],
           )
         ],
       ),
