@@ -1,4 +1,4 @@
-import 'package:buscheck/services/database.dart';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:buscheck/models/user.dart' as LocalUser;
 
@@ -13,6 +13,13 @@ class AuthService{
  /* LocalUser.User? _userFromUser(User user) {
     return user != null ? LocalUser.User(uid: user.uid) : null;
   }*/
+
+bool isValidEmail(String email) {
+  final RegExp regex = RegExp(
+    r'^[a-zA-Z0-9.a-zA-Z0-9._%-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$'
+  );
+  return regex.hasMatch(email);
+}
 
   LocalUser.User _userFromUser(User? user) {
   if (user != null) {
@@ -31,43 +38,55 @@ class AuthService{
 
   // sign in anon
   Future signInAnon() async {
-     try {
-    UserCredential result = await FirebaseAuth.instance.signInAnonymously();
+  try {
+    UserCredential result = await _auth.signInAnonymously();
     User? user = result.user;
+    
     if (user != null) {
       return _userFromUser(user);
     } else {
       return null;
     }
   } catch (error) {
-    logger.e("Kilépés közbeni hiba: ${error.toString()}");
+    logger.e("Error during sign-in: ${error.toString()}");
     return null;
   }
-  }
+}
   
   // sign in with email and password
   Future signInWithEmailAndPassword(String email, String password) async {
-    try {
-      UserCredential result = await _auth.signInWithEmailAndPassword(email: email, password: password);
-      User? user = result.user;
-      return user;
-    } catch (error) {
-       logger.e("Kilépés közbeni hiba: ${error.toString()}");
-      return null;
-    } 
+  try {
+
+    if (!isValidEmail(email)) {
+    logger.e("Please supply a valid email.");
+    return null;
   }
+
+    UserCredential result = await _auth.signInWithEmailAndPassword(email: email, password: password);
+    User? user = result.user;
+    return user;
+  } catch (error) {
+    logger.e("Error during sign-in: ${error.toString()}");
+    return null;
+  }
+}
 
   // register with email and password
   Future registerWithEmailAndPassword(String email, String password) async {
     try {
+
+if (!isValidEmail(email)) {
+    logger.e("Please supply a valid email.");
+    return null;
+  }
+
       UserCredential result = await FirebaseAuth.instance.createUserWithEmailAndPassword(email: email, password: password);
       User? user = result.user;
       // create a new document for the user with the uid
-      await DatabaseService(uid: user!.uid).updateUserData('new member','new email','new password');
       
       return _userFromUser(user);
     } catch (error) {
-      logger.e("Kilépés közbeni hiba: ${error.toString()}");
+      logger.e("Error during register: ${error.toString()}");
       return null;
     } 
   }
@@ -77,7 +96,7 @@ class AuthService{
     try {
       return await _auth.signOut();
     } catch (error) {
-      logger.e("Kilépés közbeni hiba: ${error.toString()}");
+      logger.e("Error during sign out: ${error.toString()}");
       return null;
     }
   }
