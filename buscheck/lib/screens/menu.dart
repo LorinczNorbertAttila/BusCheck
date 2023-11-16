@@ -1,5 +1,4 @@
 import 'package:advanced_icon/advanced_icon.dart';
-import 'package:buscheck/screens/registration_page.dart';
 import 'package:buscheck/services/auth.dart';
 import 'package:buscheck/theme/theme_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -87,10 +86,7 @@ class _MenuState extends State<Menu> {
                     backgroundColor: Colors.cyan[400],
                   ),
                   onPressed: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (cosntext) => const Registration()));
+                    Navigator.pushNamed(context, '/register');
                   },
                   child: const Text(
                     'Register',
@@ -135,10 +131,7 @@ class _MenuState extends State<Menu> {
                 style: TextStyle(fontFamily: 'LilitaOne', fontSize: 22),
               ),
               onTap: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (cosntext) => const Registration()));
+                Navigator.pushNamed(context, '/register');
               }),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,

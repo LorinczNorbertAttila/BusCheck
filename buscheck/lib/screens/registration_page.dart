@@ -1,6 +1,5 @@
 import 'package:buscheck/screens/home_page.dart';
 import 'package:buscheck/services/auth.dart';
-import 'package:buscheck/shared/constans.dart';
 import 'package:flutter/material.dart';
 
 class Registration extends StatefulWidget {
@@ -32,8 +31,7 @@ class _RegistrationState extends State<Registration> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.push(context,
-                MaterialPageRoute(builder: (cosntext) => const Home()));
+            Navigator.pushNamed(context, '/home');
           },
         ),
       ),
@@ -98,6 +96,9 @@ class _RegistrationState extends State<Registration> {
                         setState(() {
                           error = 'Please supply a valid email';
                         });
+                      } else {
+                        // ignore: use_build_context_synchronously
+                        Navigator.pushNamed(context, '/home');
                       }
                     }
                   }),
@@ -116,10 +117,7 @@ class _RegistrationState extends State<Registration> {
                   ),
                   InkWell(
                     onTap: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (cosntext) => const SignIn()));
+                      Navigator.pushNamed(context, '/signin');
                     },
                     child: const Text(
                       'SIGN IN',
@@ -164,8 +162,7 @@ class _SignInState extends State<SignIn> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.push(context,
-                MaterialPageRoute(builder: (cosntext) => const Home()));
+            Navigator.pushNamed(context, '/home');
           },
         ),
       ),
@@ -230,6 +227,9 @@ class _SignInState extends State<SignIn> {
                         setState(() {
                           error = 'Could not sign in with those credentials';
                         });
+                      } else {
+                        // ignore: use_build_context_synchronously
+                        Navigator.pushNamed(context, '/home');
                       }
                     }
                   }),
