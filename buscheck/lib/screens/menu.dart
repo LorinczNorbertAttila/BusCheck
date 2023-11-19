@@ -20,20 +20,51 @@ class _MenuState extends State<Menu> {
         FirebaseAuth.instance.currentUser!.isAnonymous != true) {
       return Drawer(
         child: ListView(
+          padding: EdgeInsets.zero,
           children: [
             UserAccountsDrawerHeader(
-                accountName: Text(
-                    FirebaseAuth.instance.currentUser!.displayName.toString()),
-                accountEmail:
-                    Text(FirebaseAuth.instance.currentUser!.email.toString())),
-            ElevatedButton(
-              onPressed: () async {
-                await _auth.signOut();
-              },
-              child: const Text(
-                'Sign out',
-                style: TextStyle(fontFamily: 'LilitaOne', fontSize: 22),
-              ),
+                decoration: const BoxDecoration(
+                  image: DecorationImage(
+                    fit: BoxFit.cover,
+                    image: AssetImage('lib/assets/images/Vasarhely.png'),
+                  ),
+                ),
+                accountName: const Text(
+                  'Welcome to Buscheck!',
+                  style: TextStyle(
+                      fontFamily: 'LilitaOne',
+                      fontSize: 15,
+                      color: Colors.white),
+                ),
+                accountEmail: Text(
+                  FirebaseAuth.instance.currentUser!.email.toString(),
+                  style: const TextStyle(
+                      fontFamily: 'LilitaOne',
+                      fontSize: 15,
+                      color: Colors.white),
+                )),
+            Column(
+              children: [
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.cyan[400],
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(32.0)),
+                    minimumSize: const Size(100, 40),
+                  ),
+                  onPressed: () async {
+                    dynamic result = await _auth.signOut();
+                    if (result != null) {
+                      // ignore: use_build_context_synchronously
+                      Navigator.pushNamed(context, '/menu');
+                    }
+                  },
+                  child: const Text(
+                    'Sign out',
+                    style: TextStyle(fontFamily: 'LilitaOne', fontSize: 22),
+                  ),
+                ),
+              ],
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
