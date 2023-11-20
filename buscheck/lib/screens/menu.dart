@@ -54,73 +54,13 @@ class _MenuState extends State<Menu> {
                   ),
                   onPressed: () async {
                     dynamic result = await _auth.signOut();
-                    if (result != null) {
+                    if (result == null) {
                       // ignore: use_build_context_synchronously
-                      Navigator.pushNamed(context, '/menu');
+                      Navigator.pop(context);
                     }
                   },
                   child: const Text(
                     'Sign out',
-                    style: TextStyle(fontFamily: 'LilitaOne', fontSize: 22),
-                  ),
-                ),
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                AdvancedIcon(
-                  icon: Icons.light_mode,
-                  secondaryIcon: Icons.dark_mode,
-                  state: Theme.of(context).brightness == Brightness.dark
-                      ? AdvancedIconState.secondary
-                      : AdvancedIconState.primary,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-                const Text(
-                  'Change Theme:',
-                  style: TextStyle(fontFamily: 'LilitaOne', fontSize: 22),
-                ),
-                const ChangeTeheme(),
-              ],
-            )
-          ],
-        ),
-      );
-    } else if (FirebaseAuth.instance.currentUser?.isAnonymous == true) {
-      return Drawer(
-        child: ListView(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.account_circle_outlined,
-                  size: 30,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-                const Text(
-                  'Guest account',
-                  style: TextStyle(fontFamily: 'LilitaOne', fontSize: 22),
-                ),
-              ],
-            ),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                const Text(
-                  'Do you want an account?',
-                  style: TextStyle(fontFamily: 'LilitaOne', fontSize: 22),
-                ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.cyan[400],
-                  ),
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/register');
-                  },
-                  child: const Text(
-                    'Register',
                     style: TextStyle(fontFamily: 'LilitaOne', fontSize: 22),
                   ),
                 ),
