@@ -1,4 +1,3 @@
-import 'package:buscheck/screens/home_page.dart';
 import 'package:buscheck/services/auth.dart';
 import 'package:flutter/material.dart';
 
@@ -83,6 +82,9 @@ class _RegistrationState extends State<Registration> {
               ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.cyan[400],
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(32.0)),
+                    minimumSize: const Size(100, 40),
                   ),
                   child: const Text(
                     'Register',
@@ -159,12 +161,6 @@ class _SignInState extends State<SignIn> {
           'Sign in',
           style: TextStyle(fontFamily: 'LilitaOne', fontSize: 22),
         ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pushNamed(context, '/home');
-          },
-        ),
       ),
       body: Container(
         padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 50.0),
@@ -214,6 +210,9 @@ class _SignInState extends State<SignIn> {
               ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.cyan[400],
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(32.0)),
+                    minimumSize: const Size(100, 40),
                   ),
                   child: const Text(
                     'Sign In',

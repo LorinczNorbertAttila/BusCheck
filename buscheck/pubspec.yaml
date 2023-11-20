@@ -68,9 +68,10 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
-  #   - images/a_dot_ham.jpeg
+  assets:
+    - lib/assets/images/Vasarhely.png
+    - lib/assets/images/Vasarhely.jpg
+
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
@@ -87,7 +88,7 @@ flutter:
   fonts:
     - family: LilitaOne
       fonts:
-        - asset: lib/fonts/LilitaOne-Regular.ttf
+        - asset: lib/assets/fonts/LilitaOne-Regular.ttf
         
   #
   # For details regarding fonts from package dependencies,

@@ -20,76 +20,47 @@ class _MenuState extends State<Menu> {
         FirebaseAuth.instance.currentUser!.isAnonymous != true) {
       return Drawer(
         child: ListView(
+          padding: EdgeInsets.zero,
           children: [
             UserAccountsDrawerHeader(
-                accountName: Text(
-                    FirebaseAuth.instance.currentUser!.displayName.toString()),
-                accountEmail:
-                    Text(FirebaseAuth.instance.currentUser!.email.toString())),
-            ElevatedButton(
-              onPressed: () async {
-                await _auth.signOut();
-              },
-              child: const Text(
-                'Sign out',
-                style: TextStyle(fontFamily: 'LilitaOne', fontSize: 22),
-              ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                AdvancedIcon(
-                  icon: Icons.light_mode,
-                  secondaryIcon: Icons.dark_mode,
-                  state: Theme.of(context).brightness == Brightness.dark
-                      ? AdvancedIconState.secondary
-                      : AdvancedIconState.primary,
-                  color: Theme.of(context).colorScheme.primary,
+                decoration: const BoxDecoration(
+                  image: DecorationImage(
+                    fit: BoxFit.cover,
+                    image: AssetImage('lib/assets/images/Vasarhely.png'),
+                  ),
                 ),
-                const Text(
-                  'Change Theme:',
-                  style: TextStyle(fontFamily: 'LilitaOne', fontSize: 22),
+                accountName: const Text(
+                  'Welcome to Buscheck!',
+                  style: TextStyle(
+                      fontFamily: 'LilitaOne',
+                      fontSize: 15,
+                      color: Colors.white),
                 ),
-                const ChangeTeheme(),
-              ],
-            )
-          ],
-        ),
-      );
-    } else if (FirebaseAuth.instance.currentUser?.isAnonymous == true) {
-      return Drawer(
-        child: ListView(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.account_circle_outlined,
-                  size: 30,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-                const Text(
-                  'Guest account',
-                  style: TextStyle(fontFamily: 'LilitaOne', fontSize: 22),
-                ),
-              ],
-            ),
+                accountEmail: Text(
+                  FirebaseAuth.instance.currentUser!.email.toString(),
+                  style: const TextStyle(
+                      fontFamily: 'LilitaOne',
+                      fontSize: 15,
+                      color: Colors.white),
+                )),
             Column(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                const Text(
-                  'Do you want an account?',
-                  style: TextStyle(fontFamily: 'LilitaOne', fontSize: 22),
-                ),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.cyan[400],
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(32.0)),
+                    minimumSize: const Size(100, 40),
                   ),
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/register');
+                  onPressed: () async {
+                    dynamic result = await _auth.signOut();
+                    if (result == null) {
+                      // ignore: use_build_context_synchronously
+                      Navigator.pop(context);
+                    }
                   },
                   child: const Text(
-                    'Register',
+                    'Sign out',
                     style: TextStyle(fontFamily: 'LilitaOne', fontSize: 22),
                   ),
                 ),
