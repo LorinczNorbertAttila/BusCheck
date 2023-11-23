@@ -21,11 +21,15 @@ class _RegistrationState extends State<Registration> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        iconTheme: Theme.of(context).iconTheme,
         backgroundColor: Colors.cyan[400],
         elevation: 0.0,
-        title: const Text(
+        title: Text(
           'Register',
-          style: TextStyle(fontFamily: 'LilitaOne', fontSize: 22),
+          style: TextStyle(
+              fontFamily: 'LilitaOne',
+              fontSize: 22,
+              color: Theme.of(context).primaryColor),
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -155,11 +159,15 @@ class _SignInState extends State<SignIn> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        iconTheme: Theme.of(context).iconTheme,
         backgroundColor: Colors.cyan[400],
         elevation: 0.0,
-        title: const Text(
+        title: Text(
           'Sign in',
-          style: TextStyle(fontFamily: 'LilitaOne', fontSize: 22),
+          style: TextStyle(
+              fontFamily: 'LilitaOne',
+              fontSize: 22,
+              color: Theme.of(context).primaryColor),
         ),
       ),
       body: Container(
