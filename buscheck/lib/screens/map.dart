@@ -1,9 +1,10 @@
 import 'dart:async';
-
+import 'package:buscheck/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-
+import 'package:flutter/services.dart' show rootBundle;
+import 'package:provider/provider.dart';
 
 class TimeService {
   int currentTime = 5; // Kezdeti idő 5 perc
@@ -27,21 +28,22 @@ class TimeService {
   }
 }
 
-
-
 class MapScreen extends StatefulWidget {
-  const MapScreen({super.key});
+  const MapScreen({Key? key}) : super(key: key);
 
   @override
-  _MapScreenState createState() => _MapScreenState();
+  MapScreenState createState() => MapScreenState();
 }
 
-class _MapScreenState extends State<MapScreen> {
-  GoogleMapController? mapController;
+class MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
+  late LatLng _currentPosition = const LatLng(0.0, 0.0);
+  final Completer<GoogleMapController> _controller = Completer();
   Position? currentPosition;
-  TimeService timeService = TimeService(); // Új időszolgáltatás példány létrehozása
-
+  TimeService timeService =
+      TimeService(); // Új időszolgáltatás példány létrehozása
   bool showUserTimeMarker = false;
+  late String _darkMapStyle;
+  late String _lightMapStyle;
 
   List<LatLng> busStopLocations = [
     const LatLng(46.523367, 24.598844),
@@ -60,58 +62,91 @@ class _MapScreenState extends State<MapScreen> {
   void initState() {
     super.initState();
     timeService.startTimer(_updateMarkers);
+    _loadMapStyles();
+    WidgetsBinding.instance.addObserver(this);
+    setMapStyle();
+    _getCurrentLocation();
+  }
+
+  Future _loadMapStyles() async {
+    _darkMapStyle =
+        await rootBundle.loadString('lib/assets/map_styles/dark.json');
+    _lightMapStyle =
+        await rootBundle.loadString('lib/assets/map_styles/light.json');
+  }
+
+  Future<void> setMapStyle() async {
+    final controller = await _controller.future;
+    // ignore: use_build_context_synchronously
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+    final theme = WidgetsBinding.instance.window.platformBrightness;
+    if (themeProvider.themeMode == ThemeMode.dark || theme == Brightness.dark) {
+      await controller.setMapStyle(_darkMapStyle);
+    } else {
+      await controller.setMapStyle(_lightMapStyle);
+    }
+  }
+
+// Inside didChangeDependencies
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    setMapStyle();
+  }
+
+  @override
+  void didUpdateWidget(covariant MapScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    setMapStyle();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Map with Geolocation'),
-      ),
-      body: Stack(
-        children: [
-          GoogleMap(
-            onMapCreated: _onMapCreated,
-            initialCameraPosition: const CameraPosition(
-              target: LatLng(0.0, 0.0),
-              zoom: 1.0,
-            ),
-            myLocationEnabled: false,
-            markers: _createMarkers(),
-          ),
-          Positioned(
-            top: 350.0,
-            right: 5.0,
-            child: Column(
-              children: [
-                FloatingActionButton(
+    double height = MediaQuery.of(context).size.height;
+    double width = MediaQuery.of(context).size.width;
+
+    // Inside _MapScreenState build method
+    return SizedBox(
+      height: height * 0.7,
+      width: width,
+      child: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, child) {
+          return Stack(
+            children: [
+              GoogleMap(
+                onMapCreated: _onMapCreated,
+                initialCameraPosition: CameraPosition(
+                  target: _currentPosition,
+                  zoom: 16.0,
+                ),
+                myLocationEnabled: false,
+                markers: _createMarkers(),
+              ),
+              Positioned(
+                top: 450.0,
+                right: 5.0,
+                child: FloatingActionButton(
                   onPressed: _getCurrentLocation,
                   tooltip: 'Get Location',
                   child: const Icon(Icons.location_searching),
                 ),
-                const SizedBox(height: 10),
-                FloatingActionButton(
-                  onPressed: _addTime,
-                  tooltip: 'Add Time',
-                  child: const Icon(Icons.timer),
-                ),
-                const SizedBox(height: 10),
-                FloatingActionButton(
-                  onPressed: _toggleUserTimeMarker,
-                  tooltip: 'Show User Time',
-                  child: const Icon(Icons.location_on),
-                ),
-              ],
-            ),
-          ),
-        ],
+              ),
+            ],
+          );
+        },
       ),
     );
   }
 
   void _onMapCreated(GoogleMapController controller) {
     setState(() {
-      mapController = controller;
+      _controller.complete(controller);
     });
   }
 
@@ -136,7 +171,8 @@ class _MapScreenState extends State<MapScreen> {
       markers.add(
         Marker(
           markerId: const MarkerId("currentLocation"),
-          position: LatLng(currentPosition!.latitude, currentPosition!.longitude),
+          position:
+              LatLng(currentPosition!.latitude, currentPosition!.longitude),
           infoWindow: const InfoWindow(title: "Your Location"),
         ),
       );
@@ -146,8 +182,10 @@ class _MapScreenState extends State<MapScreen> {
       markers.add(
         Marker(
           markerId: const MarkerId("userTime"),
-          position: LatLng(currentPosition!.latitude + 0.001, currentPosition!.longitude + 0.001),
-          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueMagenta),
+          position: LatLng(currentPosition!.latitude + 0.001,
+              currentPosition!.longitude + 0.001),
+          icon: BitmapDescriptor.defaultMarkerWithHue(
+              BitmapDescriptor.hueMagenta),
           infoWindow: InfoWindow(
             title: "User Time",
             snippet: "Time Remaining: ${timeService.currentTime} minutes",
@@ -159,22 +197,51 @@ class _MapScreenState extends State<MapScreen> {
     return markers;
   }
 
-  void _getCurrentLocation() async {
-    Position position = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.high,
-    );
+  // Check location permission
+  Future<bool> _checkLocationPermission() async {
+    var status = await Geolocator.checkPermission();
+    if (status == LocationPermission.denied) {
+      status = await Geolocator.requestPermission();
+    }
+    return status == LocationPermission.whileInUse ||
+        status == LocationPermission.always;
+  }
 
-    setState(() {
-      currentPosition = position;
-      mapController?.animateCamera(
-        CameraUpdate.newCameraPosition(
-          CameraPosition(
-            target: LatLng(position.latitude, position.longitude),
-            zoom: 15.0,
-          ),
-        ),
-      );
-    });
+  void _getCurrentLocation() async {
+    GoogleMapController controller = await _controller.future;
+    // Check for location permission
+    if (await _checkLocationPermission()) {
+      try {
+        Position position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high,
+        );
+
+        double lat = position.latitude;
+        double long = position.longitude;
+
+        LatLng location = LatLng(lat, long);
+
+        setState(() {
+          currentPosition = position;
+          _currentPosition = location;
+          controller.animateCamera(
+            CameraUpdate.newCameraPosition(
+              CameraPosition(
+                target: LatLng(position.latitude, position.longitude),
+                zoom: 15.0,
+              ),
+            ),
+          );
+        });
+      } catch (e) {
+        // Handle errors while getting the location
+        print('Error getting location: $e');
+      }
+    } else {
+      // Show a message or UI indicating that location permission is required
+      // You may want to request permission again or guide the user to settings
+      print('Location permission denied');
+    }
   }
 
   void _addTime() {
