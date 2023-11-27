@@ -1,3 +1,4 @@
+import 'package:buscheck/screens/map.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -26,8 +27,8 @@ class myThemes {
       iconTheme: const IconThemeData(color: Colors.white));
 }
 
-class ChangeTeheme extends StatelessWidget {
-  const ChangeTeheme({super.key});
+class ChangeTheme extends StatelessWidget {
+  const ChangeTheme({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -38,6 +39,9 @@ class ChangeTeheme extends StatelessWidget {
         onChanged: (value) {
           final provider = Provider.of<ThemeProvider>(context, listen: false);
           provider.toggleTheme(value);
+          final mapScreenState =
+              context.findAncestorStateOfType<MapScreenState>();
+          mapScreenState?.setMapStyle();
         });
   }
 }
