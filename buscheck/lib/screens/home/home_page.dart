@@ -1,3 +1,4 @@
+
 import 'package:buscheck/screens/home/map.dart';
 import 'package:buscheck/screens/home/menu.dart';
 import 'package:flutter/material.dart';
@@ -44,7 +45,9 @@ class _HomeState extends State<Home> {
             children: [
               FloatingActionButton(
                 heroTag: null,
-                onPressed: null,
+                onPressed: () {
+                  Navigator.pushNamed(context, '/buslist');
+                },
                 backgroundColor: Colors.cyan[400],
                 child: Bus(
                   width: 35,

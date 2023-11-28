@@ -1,3 +1,5 @@
+
+import 'package:buscheck/screens/bus_page/bus_list.dart';
 import 'package:buscheck/screens/home/home_page.dart';
 import 'package:buscheck/screens/home/menu.dart';
 import 'package:buscheck/screens/registration&sign_in/registration_page.dart';
@@ -35,6 +37,7 @@ class MyApp extends StatelessWidget {
               '/signin': (context) => const SignIn(),
               '/register': (context) => const Registration(),
               '/menu': (context) => const Menu(),
+              '/buslist': (context) => const BusList(),
             },
             home: const Home());
       });
