@@ -1,5 +1,5 @@
-import 'package:buscheck/screens/map.dart';
-import 'package:buscheck/screens/menu.dart';
+import 'package:buscheck/screens/home/map.dart';
+import 'package:buscheck/screens/home/menu.dart';
 import 'package:flutter/material.dart';
 import 'package:iconoir_flutter/bus.dart';
 import 'package:iconoir_flutter/bus_stop.dart';
