@@ -81,7 +81,7 @@ class _MenuState extends State<Menu> {
                   'Change Theme:',
                   style: TextStyle(fontFamily: 'LilitaOne', fontSize: 22),
                 ),
-                const ChangeTeheme(),
+                const ChangeTheme(),
               ],
             )
           ],
@@ -119,7 +119,7 @@ class _MenuState extends State<Menu> {
                 'Change Theme:',
                 style: TextStyle(fontFamily: 'LilitaOne', fontSize: 22),
               ),
-              const ChangeTeheme(),
+              const ChangeTheme(),
             ],
           )
         ],

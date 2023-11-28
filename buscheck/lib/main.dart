@@ -1,7 +1,8 @@
+
 import 'package:buscheck/screens/bus_page/bus_list.dart';
 import 'package:buscheck/screens/home/home_page.dart';
 import 'package:buscheck/screens/home/menu.dart';
-import 'package:buscheck/screens/register&sign_in/registration_page.dart';
+import 'package:buscheck/screens/registration&sign_in/registration_page.dart';
 import 'package:buscheck/theme/theme_provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
