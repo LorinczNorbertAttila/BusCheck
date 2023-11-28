@@ -1,5 +1,8 @@
+import 'dart:ffi';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
 class BusList extends StatefulWidget {
   const BusList({super.key});
@@ -53,35 +56,60 @@ class _BusListState extends State<BusList> {
                             ),
                           ],
                         ),
-                        child: Row(
+                        child: Stack(
                           children: [
-                            Container(
-                              margin: const EdgeInsets.only(left: 20),
-                              alignment: Alignment.centerLeft,
-                              child: Icon(
-                                Icons.directions_bus,
-                                color: Theme.of(context).colorScheme.primary,
-                              ),
+                            Row(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 20),
+                                  child: Icon(
+                                    Icons.directions_bus,
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
+                                  ),
+                                ),
+                                Container(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    " - ${snap[index].id}",
+                                    style: TextStyle(
+                                      color:
+                                          Theme.of(context).colorScheme.primary,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                Container(
+                                  margin: const EdgeInsets.only(left: 15),
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    "Rating: ${snap[index]['Rating']}/5.00",
+                                    style: TextStyle(
+                                      color: Colors.cyan[400],
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                             Container(
-                              alignment: Alignment.centerLeft,
-                              child: Text(
-                                " - ${snap[index].id}",
-                                style: TextStyle(
-                                  color: Theme.of(context).colorScheme.primary,
-                                  fontWeight: FontWeight.bold,
+                              margin: const EdgeInsets.only(right: 20),
+                              alignment: Alignment.centerRight,
+                              child: RatingBar.builder(
+                                initialRating: 0,
+                                minRating: 1,
+                                direction: Axis.horizontal,
+                                allowHalfRating: true,
+                                itemCount: 5,
+                                itemSize: 26,
+                                glowColor: Colors.cyan[400],
+                                itemPadding:
+                                    const EdgeInsets.symmetric(horizontal: 0.2),
+                                itemBuilder: (context, _) => const Icon(
+                                  Icons.star,
+                                  color: Colors.amber,
                                 ),
-                              ),
-                            ),
-                            Container(
-                              margin: const EdgeInsets.only(left: 20),
-                              alignment: Alignment.centerLeft,
-                              child: Text(
-                                "${snap[index]['Rating']}/5.00",
-                                style: TextStyle(
-                                  color: Colors.cyan[400],
-                                  fontWeight: FontWeight.bold,
-                                ),
+                                onRatingUpdate: (rating) {},
                               ),
                             ),
                           ],
