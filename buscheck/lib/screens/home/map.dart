@@ -5,9 +5,9 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:provider/provider.dart';
-
+ 
 class TimeService {
-  int currentTime = 5; // Kezdeti idő 5 perc
+  int currentTime = 5; 
   late Timer timer;
 
   void startTimer(Function callback) {
