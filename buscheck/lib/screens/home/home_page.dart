@@ -1,6 +1,5 @@
-
-import 'package:buscheck/screens/home/map.dart';
 import 'package:buscheck/screens/home/menu.dart';
+import 'package:buscheck/screens/stations.dart';
 import 'package:flutter/material.dart';
 import 'package:iconoir_flutter/bus.dart';
 import 'package:iconoir_flutter/bus_stop.dart';
@@ -39,7 +38,10 @@ class _HomeState extends State<Home> {
       body: Column(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          MapScreen(),
+          //Add map to app
+          Expanded(
+            child: MapScreen1(), 
+          ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
@@ -73,7 +75,7 @@ class _HomeState extends State<Home> {
                     color: Theme.of(context).primaryColor,
                   ))
             ],
-          )
+          ),
         ],
       ),
     );
