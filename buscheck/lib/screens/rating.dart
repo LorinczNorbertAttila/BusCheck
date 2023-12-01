@@ -1,9 +1,9 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class BusList extends StatefulWidget {
-  const BusList({super.key});
+  const BusList({Key? key}) : super(key: key);
 
   @override
   State<BusList> createState() => _BusListState();
@@ -108,7 +108,8 @@ class _BusListState extends State<BusList> {
                                   color: Colors.amber,
                                 ),
                                 onRatingUpdate: (rating) {
-                                  updateRatingInFirestore(snap[index].id, rating);
+                                  updateRatingInFirestore(
+                                      snap[index].id, rating);
                                 },
                               ),
                             ),
@@ -127,16 +128,26 @@ class _BusListState extends State<BusList> {
       ),
     );
   }
-}
-void updateRatingInFirestore(String busId, double rating) {
-  // Firebase Firestore példa referencia a "Bus" kollekcióra
-  CollectionReference buses = FirebaseFirestore.instance.collection('Bus');
 
-  buses.doc(busId).update({'Rating': rating}).then((value) {
-    print('Bus rating updated successfully');
-    // Itt további műveleteket hajthatsz végre, ha szükséges
-  }).catchError((error) {
-    print('Failed to update bus rating: $error');
-    // Itt kezelheted a hibákat, ha szükséges
-  });
+  void updateRatingInFirestore(String busId, double rating) {
+    CollectionReference buses =
+        FirebaseFirestore.instance.collection('Bus');
+
+    buses.doc(busId).update({'Rating': rating}).then((value) {
+      print('Bus rating updated successfully');
+      showSnackbar(context, 'Rating updated successfully');
+    }).catchError((error) {
+      print('Failed to update bus rating: $error');
+      showSnackbar(context, 'Failed to update rating');
+    });
+  }
+
+  void showSnackbar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
 }
