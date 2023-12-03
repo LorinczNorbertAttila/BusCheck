@@ -1,13 +1,11 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-
-// Class TimeService  give time to markel 
+// Class TimeService  give time to markel
 class TimeService {
   int currentTime = 5;
 
@@ -40,7 +38,10 @@ class MapData with ChangeNotifier {
 
 // Class MapScreen1 displays the map
 class MapScreen1 extends StatefulWidget {
+  const MapScreen1({super.key});
+
   @override
+  // ignore: library_private_types_in_public_api
   _MapScreenState createState() => _MapScreenState();
 }
 
@@ -48,7 +49,7 @@ class _MapScreenState extends State<MapScreen1> {
   GoogleMapController? mapController;
   Position? currentPosition;
   TimeService timeService = TimeService();
-  List<String?> busStopNames = []; 
+  List<String?> busStopNames = [];
   Set<Marker> markers = {};
   bool showUserTimeMarker = false;
 
@@ -62,7 +63,7 @@ class _MapScreenState extends State<MapScreen1> {
     _loadBusStopLocations();
   }
 
- // Check and handle location permission
+  // Check and handle location permission
   Future<void> _checkLocationPermission() async {
     var status = await Permission.location.status;
 
@@ -86,14 +87,15 @@ class _MapScreenState extends State<MapScreen1> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text("Permission denied"),
-          content: Text("The application requires location permission to function."),
+          title: const Text("Permission denied"),
+          content: const Text(
+              "The application requires location permission to function."),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text("I understand"),
+              child: const Text("I understand"),
             ),
           ],
         );
@@ -108,25 +110,35 @@ class _MapScreenState extends State<MapScreen1> {
           await FirebaseFirestore.instance.collection('Bus stops').get();
 
       if (snapshot.docs.isNotEmpty) {
-        final List<LatLng?> busStopLocations = snapshot.docs.map((doc) {
-          try {
-            final double? latitude = doc['Latitude'] != null ? double.tryParse(doc['Latitude'] as String) : null;
-            final double? longitude = doc['Longitude'] != null ? double.tryParse(doc['Longitude'] as String) : null;
-            final String? name = doc['Name'] != null ? doc['Name'] as String : "";
+        final List<LatLng?> busStopLocations = snapshot.docs
+            .map((doc) {
+              try {
+                final double? latitude = doc['Latitude'] != null
+                    ? double.tryParse(doc['Latitude'] as String)
+                    : null;
+                final double? longitude = doc['Longitude'] != null
+                    ? double.tryParse(doc['Longitude'] as String)
+                    : null;
+                final String name =
+                    doc['Name'] != null ? doc['Name'] as String : "";
 
-            if (latitude != null && longitude != null && name != null && name.isNotEmpty) {
-              print('Buszmegálló szélessége: $latitude, hosszúsága: $longitude, Név: $name');
-              busStopNames.add(name);
-              return LatLng(latitude, longitude);
-            } else {
-              print('Missing or invalid data in the Firestore document: $doc');
-              return null;
-            }
-          } catch (e) {
-            print('Error processing Firestore data: $e');
-            return null;
-          }
-        }).where((location) => location != null).toList();
+                if (latitude != null && longitude != null && name.isNotEmpty) {
+                  print(
+                      'Buszmegálló szélessége: $latitude, hosszúsága: $longitude, Név: $name');
+                  busStopNames.add(name);
+                  return LatLng(latitude, longitude);
+                } else {
+                  print(
+                      'Missing or invalid data in the Firestore document: $doc');
+                  return null;
+                }
+              } catch (e) {
+                print('Error processing Firestore data: $e');
+                return null;
+              }
+            })
+            .where((location) => location != null)
+            .toList();
 
         print('Buszmegállók pozíciói: $busStopLocations');
 
@@ -155,7 +167,7 @@ class _MapScreenState extends State<MapScreen1> {
         children: [
           GoogleMap(
             onMapCreated: _onMapCreated,
-            initialCameraPosition: CameraPosition(
+            initialCameraPosition: const CameraPosition(
               target: LatLng(0.0, 0.0),
               zoom: 1.0,
             ),
@@ -172,15 +184,15 @@ class _MapScreenState extends State<MapScreen1> {
                     _getLocation();
                   },
                   tooltip: 'Specify location',
-                  child: Icon(Icons.location_searching),
+                  child: const Icon(Icons.location_searching),
                 ),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 FloatingActionButton(
                   onPressed: () {
                     _addUserTime();
                   },
                   tooltip: 'Add time',
-                  child: Icon(Icons.timer),
+                  child: const Icon(Icons.timer),
                 ),
               ],
             ),
@@ -196,7 +208,7 @@ class _MapScreenState extends State<MapScreen1> {
       mapController = controller;
 
       markers.add(
-        Marker(
+        const Marker(
           markerId: MarkerId("SampleMarker"),
           position: LatLng(0.0, 0.0),
           infoWindow: InfoWindow(title: "Sample Marker"),
@@ -209,14 +221,14 @@ class _MapScreenState extends State<MapScreen1> {
     });
   }
 
- // Add or update user time
+  // Add or update user time
   void _addUserTime() {
     setState(() {
       if (!showUserTimeMarker) {
         showUserTimeMarker = true;
         _updateMarkers();
 
-        timer = Timer.periodic(Duration(minutes: 1), (timer) {
+        timer = Timer.periodic(const Duration(minutes: 1), (timer) {
           if (timeService.currentTime <= 0) {
             showUserTimeMarker = false;
             _updateMarkers();
@@ -233,7 +245,7 @@ class _MapScreenState extends State<MapScreen1> {
     });
   }
 
- // Update markers
+  // Update markers
   void _updateMarkers() {
     setState(() {
       markers.clear();
@@ -244,7 +256,8 @@ class _MapScreenState extends State<MapScreen1> {
             Marker(
               markerId: MarkerId("Station $i"),
               position: busStopLocations[i]!,
-              icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+              icon: BitmapDescriptor.defaultMarkerWithHue(
+                  BitmapDescriptor.hueBlue),
               infoWindow: InfoWindow(
                 title: busStopNames[i]!,
                 snippet: "Bus Stop #$i",
@@ -257,18 +270,21 @@ class _MapScreenState extends State<MapScreen1> {
       if (currentPosition != null) {
         markers.add(
           Marker(
-            markerId: MarkerId("aktuálisHely"),
-            position: LatLng(currentPosition!.latitude, currentPosition!.longitude),
-            infoWindow: InfoWindow(title: "Your current location"),
+            markerId: const MarkerId("aktuálisHely"),
+            position:
+                LatLng(currentPosition!.latitude, currentPosition!.longitude),
+            infoWindow: const InfoWindow(title: "Your current location"),
           ),
         );
 
         if (showUserTimeMarker && timeService.currentTime > 0) {
           markers.add(
             Marker(
-              markerId: MarkerId("ControllerTime"),
-              position: LatLng(currentPosition!.latitude + 0.001, currentPosition!.longitude + 0.001),
-              icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueMagenta),
+              markerId: const MarkerId("ControllerTime"),
+              position: LatLng(currentPosition!.latitude + 0.001,
+                  currentPosition!.longitude + 0.001),
+              icon: BitmapDescriptor.defaultMarkerWithHue(
+                  BitmapDescriptor.hueMagenta),
               infoWindow: InfoWindow(
                 title: "Controller",
                 snippet: "Remaining time: ${timeService.currentTime} min",
@@ -280,7 +296,7 @@ class _MapScreenState extends State<MapScreen1> {
     });
   }
 
- // Get current location
+  // Get current location
   void _getLocation() async {
     try {
       Position position = await Geolocator.getCurrentPosition(

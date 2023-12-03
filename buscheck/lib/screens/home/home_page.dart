@@ -1,3 +1,4 @@
+import 'package:buscheck/screens/home/map.dart';
 import 'package:buscheck/screens/home/menu.dart';
 import 'package:buscheck/screens/stations.dart';
 import 'package:flutter/material.dart';
@@ -39,9 +40,7 @@ class _HomeState extends State<Home> {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           //Add map to app
-          Expanded(
-            child: MapScreen1(), 
-          ),
+          const MapScreen(),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
