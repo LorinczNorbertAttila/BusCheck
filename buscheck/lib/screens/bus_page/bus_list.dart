@@ -12,6 +12,8 @@ class BusList extends StatefulWidget {
 class _BusListState extends State<BusList> {
   @override
   Widget build(BuildContext context) {
+    double height = MediaQuery.of(context).size.height;
+    double width = MediaQuery.of(context).size.width;
     return Scaffold(
       appBar: AppBar(
         iconTheme: Theme.of(context).iconTheme,
@@ -42,7 +44,7 @@ class _BusListState extends State<BusList> {
                       return Container(
                         height: 70,
                         width: double.infinity,
-                        margin: const EdgeInsets.only(bottom: 12),
+                        margin: EdgeInsets.only(bottom: height * 0.015),
                         decoration: BoxDecoration(
                           color: Theme.of(context).scaffoldBackgroundColor,
                           borderRadius: BorderRadius.circular(20),
@@ -59,7 +61,7 @@ class _BusListState extends State<BusList> {
                             Row(
                               children: [
                                 Padding(
-                                  padding: const EdgeInsets.only(left: 20),
+                                  padding: EdgeInsets.only(left: width * 0.03),
                                   child: Icon(
                                     Icons.directions_bus,
                                     color:
@@ -78,7 +80,7 @@ class _BusListState extends State<BusList> {
                                   ),
                                 ),
                                 Container(
-                                  margin: const EdgeInsets.only(left: 15),
+                                  margin: EdgeInsets.only(left: width * 0.025),
                                   alignment: Alignment.centerLeft,
                                   child: Text(
                                     "Rating: ${snap[index]['Rating']}/5.00",
@@ -91,7 +93,7 @@ class _BusListState extends State<BusList> {
                               ],
                             ),
                             Container(
-                              margin: const EdgeInsets.only(right: 20),
+                              margin: EdgeInsets.only(right: width * 0.03),
                               alignment: Alignment.centerRight,
                               child: RatingBar.builder(
                                 initialRating: 0,
@@ -101,8 +103,8 @@ class _BusListState extends State<BusList> {
                                 itemCount: 5,
                                 itemSize: 26,
                                 glowColor: Colors.cyan[400],
-                                itemPadding:
-                                    const EdgeInsets.symmetric(horizontal: 0.2),
+                                itemPadding: EdgeInsets.symmetric(
+                                    horizontal: width * 0.003),
                                 itemBuilder: (context, _) => const Icon(
                                   Icons.star,
                                   color: Colors.amber,
