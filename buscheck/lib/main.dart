@@ -32,12 +32,12 @@ class MyApp extends StatelessWidget {
             darkTheme: myThemes.darkTheme,
             initialRoute: '/home',
             routes: {
-              '/home': (context) => const Home(),
+              '/home': (context) =>  Home(),
               '/signin': (context) => const SignIn(),
               '/register': (context) => const Registration(),
               '/menu': (context) => const Menu(),
               '/buslist': (context) => const BusList(),
             },
-            home: const Home());
+            home:  Home());
       });
 }

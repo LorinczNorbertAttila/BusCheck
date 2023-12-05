@@ -4,14 +4,28 @@ import 'package:flutter/material.dart';
 import 'package:iconoir_flutter/bus.dart';
 import 'package:iconoir_flutter/bus_stop.dart';
 
-class Home extends StatefulWidget {
-  const Home({super.key});
 
+
+class Home extends StatefulWidget {
   @override
   State<Home> createState() => _HomeState();
 }
 
 class _HomeState extends State<Home> {
+ 
+ GlobalKey<MapScreenState> _mapScreenKey = GlobalKey<MapScreenState>();
+
+  void _addUserTime() {
+    MapScreenState? mapScreenState = _mapScreenKey.currentState;
+    mapScreenState?.addControllerTimeMarker();
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('User time added!'),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     //double height = MediaQuery.of(context).size.height;
@@ -39,7 +53,8 @@ class _HomeState extends State<Home> {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           // ignore: prefer_const_constructors
-          MapScreen(),
+         // MapScreen(),
+          MapScreen(key: _mapScreenKey, addUserTimeCallback: _addUserTime),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
@@ -56,7 +71,9 @@ class _HomeState extends State<Home> {
               ),
               FloatingActionButton(
                 heroTag: null,
-                onPressed: null,
+                 onPressed: () {
+    _mapScreenKey.currentState?.addUserTimeCallback();
+  },
                 backgroundColor: Colors.cyan[400],
                 child: Icon(
                   Icons.local_police_outlined,

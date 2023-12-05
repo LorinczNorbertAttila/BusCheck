@@ -296,6 +296,8 @@ class _MapScreenState extends State<MapScreen1> {
     });
   }
 
+  
+
   // Get current location
   void _getLocation() async {
     try {

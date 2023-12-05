@@ -1,25 +1,15 @@
 import 'dart:async';
 import 'package:buscheck/theme/theme_provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:provider/provider.dart';
 
+// Class TimeService  give time to markel 
 class TimeService {
   int currentTime = 5;
-  late Timer timer;
-
-  void startTimer(Function callback) {
-    timer = Timer.periodic(const Duration(minutes: 1), (Timer t) {
-      if (currentTime > 0) {
-        currentTime--;
-        callback();
-      } else {
-        timer.cancel();
-      }
-    });
-  }
 
   void addTime() {
     if (currentTime < 15) {
@@ -28,8 +18,30 @@ class TimeService {
   }
 }
 
+// Class MapData stores data for the map, using ChangeNotifier
+class MapData with ChangeNotifier {
+  Position? currentPosition;
+  List<LatLng?> busStopLocations = [];
+  List<String?> busStopNames = [];
+
+// Function to update data
+  void updateData({
+    required Position currentPosition,
+    required List<LatLng?> busStopLocations,
+    required List<String?> busStopNames,
+  }) {
+    this.currentPosition = currentPosition;
+    this.busStopLocations = busStopLocations;
+    this.busStopNames = busStopNames;
+
+    notifyListeners();
+  }
+}
+
+
 class MapScreen extends StatefulWidget {
-  const MapScreen({Key? key}) : super(key: key);
+   final VoidCallback addUserTimeCallback;
+  const MapScreen({Key? key, required this.addUserTimeCallback}) : super(key: key);
 
   @override
   MapScreenState createState() => MapScreenState();
@@ -38,35 +50,94 @@ class MapScreen extends StatefulWidget {
 class MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
   late LatLng _currentPosition = const LatLng(0.0, 0.0);
   final Completer<GoogleMapController> _controller = Completer();
+  GoogleMapController? mapController;
   Position? currentPosition;
-  TimeService timeService =
-      TimeService(); // Új időszolgáltatás példány létrehozása
+  TimeService timeService = TimeService();
+  List<String?> busStopNames = []; 
+  Set<Marker> markers = {};
   bool showUserTimeMarker = false;
   late String _darkMapStyle;
   late String _lightMapStyle;
 
-  List<LatLng> busStopLocations = [
-    const LatLng(46.523367, 24.598844),
-    const LatLng(46.5434832, 24.5338982),
-    const LatLng(46.5461918, 24.5531005),
-    const LatLng(46.5395414, 24.5447104),
-    const LatLng(46.537588, 24.5474658),
-    const LatLng(46.5329167, 24.5177478),
-    const LatLng(46.533441, 24.5314163),
-    const LatLng(46.5334121, 24.5281571),
-    const LatLng(46.5376421, 24.4692577),
-    const LatLng(46.5347231, 24.546086),
-  ];
+  void addUserTimeCallback() {
+    _addUserTime();
+  }
+
+   List<LatLng?> busStopLocations = [];
+  Timer? timer;
 
   @override
   void initState() {
     super.initState();
-    timeService.startTimer(_updateMarkers);
     _loadMapStyles();
     WidgetsBinding.instance.addObserver(this);
     setMapStyle();
     _getCurrentLocation();
+    _loadBusStopLocations();
   }
+
+  // Load bus stop locations from Firestore
+  Future<void> _loadBusStopLocations() async {
+    try {
+      final QuerySnapshot<Map<String, dynamic>> snapshot =
+          await FirebaseFirestore.instance.collection('Bus stops').get();
+
+      if (snapshot.docs.isNotEmpty) {
+        final List<LatLng?> busStopLocations = snapshot.docs.map((doc) {
+          try {
+            final double? latitude = doc['Latitude'] != null ? double.tryParse(doc['Latitude'] as String) : null;
+            final double? longitude = doc['Longitude'] != null ? double.tryParse(doc['Longitude'] as String) : null;
+            final String name = doc['Name'] != null ? doc['Name'] as String : "";
+
+            if (latitude != null && longitude != null && name.isNotEmpty) {
+              print('Buszmegálló szélessége: $latitude, hosszúsága: $longitude, Név: $name');
+              busStopNames.add(name);
+              return LatLng(latitude, longitude);
+            } else {
+              print('Missing or invalid data in the Firestore document: $doc');
+              return null;
+            }
+          } catch (e) {
+            print('Error processing Firestore data: $e');
+            return null;
+          }
+        }).where((location) => location != null).toList();
+
+        print('Buszmegállók pozíciói: $busStopLocations');
+
+        setState(() {
+          this.busStopLocations = busStopLocations;
+          _updateMarkers();
+        });
+      } else {
+        print('Nincsenek buszmegállók a Firestore-ban.');
+      }
+    } catch (e) {
+      print('Hiba a buszmegállók betöltésekor: $e');
+    }
+  }
+
+   void addControllerTimeMarker() {
+    if (showUserTimeMarker && timeService.currentTime > 0) {
+      markers.add(
+        Marker(
+          markerId: const MarkerId("ControllerTime"),
+          position: LatLng(
+            currentPosition!.latitude + 0.0001,
+            currentPosition!.longitude + 0.0001,
+          ),
+          icon: BitmapDescriptor.defaultMarkerWithHue(
+            BitmapDescriptor.hueMagenta,
+          ),
+          infoWindow: InfoWindow(
+            title: "Controller",
+            snippet: "Remaining time: ${timeService.currentTime} min",
+          ),
+        ),
+      );
+    }
+  }
+
 
   Future _loadMapStyles() async {
     _darkMapStyle =
@@ -103,6 +174,7 @@ class MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    timer?.cancel();
     super.dispose();
   }
 
@@ -126,11 +198,11 @@ class MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
                   zoom: 16.0,
                 ),
                 myLocationEnabled: false,
-                markers: _createMarkers(),
+                markers: markers,
               ),
               Positioned(
                 top: height * 0.50,
-                right: width * 0.05,
+                right: width * 0.02,
                 child: FloatingActionButton(
                   onPressed: _getCurrentLocation,
                   tooltip: 'Get Location',
@@ -144,57 +216,78 @@ class MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
     );
   }
 
+  // Operations after map creation
   void _onMapCreated(GoogleMapController controller) {
     setState(() {
-      _controller.complete(controller);
+  
+     _controller.complete(controller);
+
     });
   }
 
-  Set<Marker> _createMarkers() {
-    Set<Marker> markers = {};
+// Add or update user time
+ void _addUserTime() {
+  setState(() {
+    if (!showUserTimeMarker) {
+      showUserTimeMarker = true;
+      _updateMarkers();
 
-    for (int i = 0; i < busStopLocations.length; i++) {
-      markers.add(
-        Marker(
-          markerId: MarkerId("BusStop $i"),
-          position: busStopLocations[i],
-          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
-          infoWindow: InfoWindow(
-            title: "Bus Stop",
-            snippet: "Stop #$i",
+      timer = Timer.periodic(const Duration(minutes: 1), (timer) {
+        if (timeService.currentTime <= 0) {
+          showUserTimeMarker = false;
+          _updateMarkers();
+          timer.cancel();
+        } else {
+          timeService.currentTime -= 1;
+          _updateMarkers();
+        }
+      });
+
+      // Call the new method to add the "ControllerTime" marker
+      addControllerTimeMarker();
+    } else {
+      timeService.addTime();
+      _updateMarkers();
+    }
+  });
+
+  // Call the callback provided by the parent widget
+  widget.addUserTimeCallback();
+}
+
+  // Update markers
+  void _updateMarkers() {
+    setState(() {
+      markers.clear();
+
+      for (int i = 0; i < busStopLocations.length; i++) {
+        if (busStopLocations[i] != null) {
+          markers.add(
+            Marker(
+              markerId: MarkerId("Station $i"),
+              position: busStopLocations[i]!,
+              icon: BitmapDescriptor.defaultMarkerWithHue(
+                  BitmapDescriptor.hueBlue),
+              infoWindow: InfoWindow(
+                title: busStopNames[i]!,
+                snippet: "Bus Stop #$i",
+              ),
+            ),
+          );
+        }
+      }
+
+      if (currentPosition != null) {
+        markers.add(
+          Marker(
+            markerId: const MarkerId("aktuálisHely"),
+            position:
+                LatLng(currentPosition!.latitude, currentPosition!.longitude),
+            infoWindow: const InfoWindow(title: "Your current location"),
           ),
-        ),
-      );
-    }
-
-    if (currentPosition != null) {
-      markers.add(
-        Marker(
-          markerId: const MarkerId("currentLocation"),
-          position:
-              LatLng(currentPosition!.latitude, currentPosition!.longitude),
-          infoWindow: const InfoWindow(title: "Your Location"),
-        ),
-      );
-    }
-
-    if (showUserTimeMarker && currentPosition != null) {
-      markers.add(
-        Marker(
-          markerId: const MarkerId("userTime"),
-          position: LatLng(currentPosition!.latitude + 0.001,
-              currentPosition!.longitude + 0.001),
-          icon: BitmapDescriptor.defaultMarkerWithHue(
-              BitmapDescriptor.hueMagenta),
-          infoWindow: InfoWindow(
-            title: "User Time",
-            snippet: "Time Remaining: ${timeService.currentTime} minutes",
-          ),
-        ),
-      );
-    }
-
-    return markers;
+        );
+      }
+    });
   }
 
   // Check location permission
@@ -208,14 +301,18 @@ class MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
   }
 
   void _getCurrentLocation() async {
-    GoogleMapController controller = await _controller.future;
-    // Check for location permission
-    if (await _checkLocationPermission()) {
-      try {
-        Position position = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.high,
-        );
+  GoogleMapController controller = await _controller.future;
 
+  // Check for location permission
+  if (await _checkLocationPermission()) {
+    try {
+      // Obtain the current position
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+
+      // Check if the obtained position is not null
+      if (position != null) {
         double lat = position.latitude;
         double long = position.longitude;
 
@@ -232,33 +329,22 @@ class MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
               ),
             ),
           );
+
+          // Update markers after obtaining the current location
+          _updateMarkers();
         });
-      } catch (e) {
-        // Handle errors while getting the location
-        print('Error getting location: $e');
+      } else {
+        // Handle the case where the position is null
+        print('Received null position');
       }
-    } else {
-      // Show a message or UI indicating that location permission is required
-      // You may want to request permission again or guide the user to settings
-      print('Location permission denied');
+    } catch (e) {
+      // Handle errors while getting the location
+      print('Error getting location: $e');
     }
+  } else {
+    // Show a message or UI indicating that location permission is required
+    print('Location permission denied');
   }
+}
 
-  void _addTime() {
-    setState(() {
-      timeService.addTime();
-      _updateMarkers();
-    });
-  }
-
-  void _toggleUserTimeMarker() {
-    setState(() {
-      showUserTimeMarker = !showUserTimeMarker;
-      _updateMarkers();
-    });
-  }
-
-  void _updateMarkers() {
-    setState(() {});
-  }
 }
