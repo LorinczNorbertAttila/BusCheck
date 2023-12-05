@@ -5,9 +5,9 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:provider/provider.dart';
- 
+
 class TimeService {
-  int currentTime = 5; 
+  int currentTime = 5;
   late Timer timer;
 
   void startTimer(Function callback) {
@@ -129,8 +129,8 @@ class MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
                 markers: _createMarkers(),
               ),
               Positioned(
-                top: 450.0,
-                right: 5.0,
+                top: height * 0.50,
+                right: width * 0.05,
                 child: FloatingActionButton(
                   onPressed: _getCurrentLocation,
                   tooltip: 'Get Location',
