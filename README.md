@@ -21,7 +21,7 @@ A very useful application for bus tracking and route finding.
 ## Installation: 
 
 - Requirement for installation:
-- 
+ 
   • flutter: [download flutter](https://docs.flutter.dev/get-started/install)
   
   • Virtual phone or a real one connected to your computer, for virtual phone install [Android studio](https://developer.android.com/studio)
