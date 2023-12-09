@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 
 class BusList extends StatefulWidget {
   const BusList({super.key});
@@ -10,7 +12,12 @@ class BusList extends StatefulWidget {
 }
 
 class _BusListState extends State<BusList> {
+  late FirebaseAuth _auth; // Add this line to declare FirebaseAuth
   @override
+  void initState() {
+    super.initState();
+    _auth = FirebaseAuth.instance; // Add this line to initialize FirebaseAuth
+  }
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -80,12 +87,27 @@ class _BusListState extends State<BusList> {
                                 Container(
                                   margin: const EdgeInsets.only(left: 15),
                                   alignment: Alignment.centerLeft,
-                                  child: Text(
-                                    "Rating: ${snap[index]['Rating']}/5.00",
-                                    style: TextStyle(
-                                      color: Colors.cyan[400],
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                  child: FutureBuilder<double>(
+                                    future: getAverageRating(snap[index].id),
+                                    builder: (context, ratingSnapshot) {
+                                      if (ratingSnapshot.connectionState ==
+                                          ConnectionState.waiting) {
+                                        return CircularProgressIndicator();
+                                      } else if (ratingSnapshot.hasError) {
+                                        return Text(
+                                            'Error: ${ratingSnapshot.error}');
+                                      } else {
+                                        double averageRating =
+                                            ratingSnapshot.data ?? 0.0;
+                                        return Text(
+                                          "Rating: $averageRating/5.00",
+                                          style: TextStyle(
+                                            color: Colors.cyan[400],
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        );
+                                      }
+                                    },
                                   ),
                                 ),
                               ],
@@ -108,7 +130,8 @@ class _BusListState extends State<BusList> {
                                   color: Colors.amber,
                                 ),
                                 onRatingUpdate: (rating) {
-                                  updateRatingInFirestore(snap[index].id, rating);
+                                  updateRatingInFirestore(
+                                      snap[index].id, rating);
                                 },
                               ),
                             ),
@@ -127,16 +150,60 @@ class _BusListState extends State<BusList> {
       ),
     );
   }
-}
-void updateRatingInFirestore(String busId, double rating) {
-  // Firebase Firestore példa referencia a "Bus" kollekcióra
-  CollectionReference buses = FirebaseFirestore.instance.collection('Bus');
 
-  buses.doc(busId).update({'Rating': rating}).then((value) {
-    print('Bus rating updated successfully');
-    // Itt további műveleteket hajthatsz végre, ha szükséges
-  }).catchError((error) {
-    print('Failed to update bus rating: $error');
-    // Itt kezelheted a hibákat, ha szükséges
-  });
+  
+
+  void updateRatingInFirestore(String busId, double rating) {
+  User? user = _auth.currentUser;
+
+  if (user != null) {
+    String userId = user.uid;
+
+    // Hozzáadjuk az értékelést a "Ratings" kollekcióhoz
+    FirebaseFirestore.instance.collection('Ratings').add({
+      'busId': busId,
+      'userId': userId,
+      'rating': rating,
+      'timestamp': FieldValue.serverTimestamp(),
+    }).then((_) {
+      print('Rating added to Ratings collection successfully');
+
+      // Az átlagolt értékelések lekérése
+      getAverageRating(busId).then((averageRating) {
+        // Frissítjük a Bus kollekciót az átlagolt értékkel
+        CollectionReference buses =
+            FirebaseFirestore.instance.collection('Bus');
+        buses.doc(busId).update({'Rating': averageRating}).then((value) {
+          print('Bus rating updated successfully');
+        }).catchError((error) {
+          print('Failed to update bus rating: $error');
+        });
+      });
+    }).catchError((error) {
+      print('Failed to add rating to Ratings collection: $error');
+    });
+  }
+}
+
+ Future<double> getAverageRating(String busId) async {
+  QuerySnapshot<Map<String, dynamic>> querySnapshot =
+      await FirebaseFirestore.instance
+          .collection('Ratings')
+          .where('busId', isEqualTo: busId)
+          .get();
+
+  List<double> ratings = querySnapshot.docs
+      .map((doc) => doc['rating'] as double)
+      .toList();
+
+  if (ratings.isNotEmpty) {
+    double sum = ratings.reduce((a, b) => a + b);
+    double average = sum / ratings.length;
+
+    // Kerekítés egész vagy fél számra
+    return (average * 2).roundToDouble() / 2;
+  } else {
+    return 0.0;
+  }
+  }
 }
