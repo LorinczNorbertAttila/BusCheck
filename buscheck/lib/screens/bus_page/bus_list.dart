@@ -16,6 +16,7 @@ class _BusListState extends State<BusList> {
   @override
   void initState() {
     super.initState();
+    // Initialize Firebase authentication
     _auth = FirebaseAuth.instance;
   }
 
@@ -36,17 +37,20 @@ class _BusListState extends State<BusList> {
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
+            // StreamBuilder to listen for changes in the "Bus" collection
             StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance.collection("Bus").snapshots(),
               builder: (BuildContext context,
                   AsyncSnapshot<QuerySnapshot> snapshot) {
                 if (snapshot.hasData) {
+                  // Extract documents from the snapshot
                   final snap = snapshot.data!.docs;
                   return ListView.builder(
                     shrinkWrap: true,
                     primary: false,
                     itemCount: snap.length,
                     itemBuilder: (context, index) {
+                      // Container representing each bus
                       return Container(
                         height: 70,
                         width: double.infinity,
@@ -64,6 +68,7 @@ class _BusListState extends State<BusList> {
                         ),
                         child: Stack(
                           children: [
+                            // Bus details displayed in a row
                             Row(
                               children: [
                                 Padding(
@@ -89,6 +94,7 @@ class _BusListState extends State<BusList> {
                                   margin: const EdgeInsets.only(left: 15),
                                   alignment: Alignment.centerLeft,
                                   child: FutureBuilder<double>(
+                                    // Display average rating for the bus
                                     future: getAverageRating(snap[index].id),
                                     builder: (context, ratingSnapshot) {
                                       if (ratingSnapshot.connectionState ==
@@ -113,6 +119,7 @@ class _BusListState extends State<BusList> {
                                 ),
                               ],
                             ),
+                            // Star rating bar allowing users to rate the bus
                             Container(
                               margin: const EdgeInsets.only(right: 20),
                               alignment: Alignment.centerRight,
@@ -131,6 +138,7 @@ class _BusListState extends State<BusList> {
                                   color: Colors.amber,
                                 ),
                                 onRatingUpdate: (rating) {
+                                  // Update the rating in Firestore when user rates
                                   updateRatingInFirestore(
                                       snap[index].id, rating);
                                 },
@@ -142,6 +150,7 @@ class _BusListState extends State<BusList> {
                     },
                   );
                 } else {
+                  // Return an empty container if no data is available
                   return const SizedBox();
                 }
               },
@@ -152,16 +161,17 @@ class _BusListState extends State<BusList> {
     );
   }
 
+  // Update Firestore with the user's rating for a specific bus
   void updateRatingInFirestore(String busId, double rating) {
     User? user = _auth.currentUser;
 
     if (user != null) {
       String userId = user.uid;
 
-      // Ellenőrizzük, hogy a felhasználó már értékelte-e ezt a buszt
+      // Check if the user has already rated this bus
       checkIfUserRatedBus(userId, busId).then((hasRated) {
         if (!hasRated) {
-          // Hozzáadjuk az értékelést a "Ratings" kollekcióhoz
+          // Add the rating to the "Ratings" collection
           FirebaseFirestore.instance.collection('Ratings').add({
             'busId': busId,
             'userId': userId,
@@ -170,9 +180,9 @@ class _BusListState extends State<BusList> {
           }).then((_) {
             print('Rating added to Ratings collection successfully');
 
-            // Az átlagolt értékelések lekérése
+            // Retrieve and update average ratings
             getAverageRating(busId).then((averageRating) {
-              // Frissítjük a Bus kollekciót az átlagolt értékkel
+              // Update the Bus collection with the average rating
               CollectionReference buses =
                   FirebaseFirestore.instance.collection('Bus');
               buses.doc(busId).update({'Rating': averageRating}).then((value) {
@@ -191,6 +201,7 @@ class _BusListState extends State<BusList> {
     }
   }
 
+  // Check if the user has already rated a specific bus
   Future<bool> checkIfUserRatedBus(String userId, String busId) async {
     QuerySnapshot<Map<String, dynamic>> querySnapshot =
         await FirebaseFirestore.instance
@@ -202,6 +213,7 @@ class _BusListState extends State<BusList> {
     return querySnapshot.docs.isNotEmpty;
   }
 
+  // Retrieve the average rating for a specific bus
   Future<double> getAverageRating(String busId) async {
     QuerySnapshot<Map<String, dynamic>> querySnapshot =
         await FirebaseFirestore.instance
@@ -217,7 +229,7 @@ class _BusListState extends State<BusList> {
       double sum = ratings.reduce((a, b) => a + b);
       double average = sum / ratings.length;
 
-      // Kerekítés egész vagy fél számra
+      // Round to the nearest half or whole number
       return (average * 2).roundToDouble() / 2;
     } else {
       return 0.0;
