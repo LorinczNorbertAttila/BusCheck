@@ -3,24 +3,27 @@ import 'package:buscheck/screens/home/menu.dart';
 import 'package:flutter/material.dart';
 import 'package:iconoir_flutter/bus.dart';
 import 'package:iconoir_flutter/bus_stop.dart';
+import 'package:buscheck/screens/home/search.dart';
 
 
 
 class Home extends StatefulWidget {
+  const Home({super.key});
+
   @override
   State<Home> createState() => _HomeState();
 }
 
 class _HomeState extends State<Home> {
  
- GlobalKey<MapScreenState> _mapScreenKey = GlobalKey<MapScreenState>();
+ final GlobalKey<MapScreenState> _mapScreenKey = GlobalKey<MapScreenState>();
 
   void _addUserTime() {
     MapScreenState? mapScreenState = _mapScreenKey.currentState;
     mapScreenState?.addControllerTimeMarker();
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
+      const SnackBar(
         content: Text('User time added!'),
       ),
     );
@@ -83,7 +86,12 @@ class _HomeState extends State<Home> {
               ),
               FloatingActionButton(
                   heroTag: null,
-                  onPressed: null,
+                 onPressed: () {
+                 Navigator.push(
+                 context,
+                 MaterialPageRoute(builder: (context) => SearchBus()), // Itt helyettesítsd be a saját kereső osztályodat
+                   );
+                 },
                   backgroundColor: Colors.cyan[400],
                   child: BusStop(
                     width: 35,
