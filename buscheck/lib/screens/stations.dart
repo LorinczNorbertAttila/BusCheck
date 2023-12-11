@@ -1,10 +1,11 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:permission_handler/permission_handler.dart';
 
+// Class TimeService  give time to markel
 class TimeService {
   int currentTime = 5;
 
@@ -15,57 +16,129 @@ class TimeService {
   }
 }
 
+// Class MapData stores data for the map, using ChangeNotifier
+class MapData with ChangeNotifier {
+  Position? currentPosition;
+  List<LatLng?> busStopLocations = [];
+  List<String?> busStopNames = [];
 
-// State class for the MapScreen widget
-class MapScreen extends StatefulWidget {
+// Function to update data
+  void updateData({
+    required Position currentPosition,
+    required List<LatLng?> busStopLocations,
+    required List<String?> busStopNames,
+  }) {
+    this.currentPosition = currentPosition;
+    this.busStopLocations = busStopLocations;
+    this.busStopNames = busStopNames;
+
+    notifyListeners();
+  }
+}
+
+// Class MapScreen1 displays the map
+class MapScreen1 extends StatefulWidget {
+  const MapScreen1({super.key});
+
   @override
+  // ignore: library_private_types_in_public_api
   _MapScreenState createState() => _MapScreenState();
 }
 
-class _MapScreenState extends State<MapScreen> {
+class _MapScreenState extends State<MapScreen1> {
   GoogleMapController? mapController;
   Position? currentPosition;
   TimeService timeService = TimeService();
-
+  List<String?> busStopNames = [];
   Set<Marker> markers = {};
   bool showUserTimeMarker = false;
 
   List<LatLng?> busStopLocations = [];
-  List<String?> busStopNames = [];
-
   Timer? timer;
 
   @override
   void initState() {
     super.initState();
+    _checkLocationPermission();
     _loadBusStopLocations();
   }
-// Method to load bus stop locations from Firestore
+
+  // Check and handle location permission
+  Future<void> _checkLocationPermission() async {
+    var status = await Permission.location.status;
+
+    if (!status.isGranted) {
+      if (status.isDenied) {
+        _showPermissionDeniedDialog();
+      } else {
+        var result = await Permission.location.request();
+
+        if (result.isGranted) {
+          print('Permission granted');
+        } else {
+          _showPermissionDeniedDialog();
+        }
+      }
+    }
+  }
+
+  void _showPermissionDeniedDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Permission denied"),
+          content: const Text(
+              "The application requires location permission to function."),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text("I understand"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+// Load bus stop locations from Firestore
   Future<void> _loadBusStopLocations() async {
     try {
       final QuerySnapshot<Map<String, dynamic>> snapshot =
           await FirebaseFirestore.instance.collection('Bus stops').get();
 
       if (snapshot.docs.isNotEmpty) {
-        final List<LatLng?> busStopLocations = snapshot.docs.map((doc) {
-          try {
-            final double? latitude = doc['Latitude'] != null ? double.tryParse(doc['Latitude'] as String) : null;
-            final double? longitude = doc['Longitude'] != null ? double.tryParse(doc['Longitude'] as String) : null;
-            final String? name = doc['Name'] != null ? doc['Name'] as String : "";
+        final List<LatLng?> busStopLocations = snapshot.docs
+            .map((doc) {
+              try {
+                final double? latitude = doc['Latitude'] != null
+                    ? double.tryParse(doc['Latitude'] as String)
+                    : null;
+                final double? longitude = doc['Longitude'] != null
+                    ? double.tryParse(doc['Longitude'] as String)
+                    : null;
+                final String name =
+                    doc['Name'] != null ? doc['Name'] as String : "";
 
-            if (latitude != null && longitude != null && name != null && name.isNotEmpty) {
-              print('Buszmegálló szélessége: $latitude, hosszúsága: $longitude, Név: $name');
-              busStopNames.add(name);
-              return LatLng(latitude, longitude);
-            } else {
-              print('Hiányzó vagy érvénytelen adatok a Firestore dokumentumban: $doc');
-              return null;
-            }
-          } catch (e) {
-            print('Hiba a Firestore adatok feldolgozásakor: $e');
-            return null;
-          }
-        }).where((location) => location != null).toList();
+                if (latitude != null && longitude != null && name.isNotEmpty) {
+                  print(
+                      'Buszmegálló szélessége: $latitude, hosszúsága: $longitude, Név: $name');
+                  busStopNames.add(name);
+                  return LatLng(latitude, longitude);
+                } else {
+                  print(
+                      'Missing or invalid data in the Firestore document: $doc');
+                  return null;
+                }
+              } catch (e) {
+                print('Error processing Firestore data: $e');
+                return null;
+              }
+            })
+            .where((location) => location != null)
+            .toList();
 
         print('Buszmegállók pozíciói: $busStopLocations');
 
@@ -87,19 +160,14 @@ class _MapScreenState extends State<MapScreen> {
     super.dispose();
   }
 
- // Widget build method for the MapScreen
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Térkép a Geolokációval'),
-      ),
       body: Stack(
         children: [
           GoogleMap(
-             // Callback when the map is created
             onMapCreated: _onMapCreated,
-            initialCameraPosition: CameraPosition(
+            initialCameraPosition: const CameraPosition(
               target: LatLng(0.0, 0.0),
               zoom: 1.0,
             ),
@@ -107,7 +175,7 @@ class _MapScreenState extends State<MapScreen> {
             markers: markers,
           ),
           Positioned(
-            top: 450.0,
+            top: 350.0,
             right: 5.0,
             child: Column(
               children: [
@@ -115,17 +183,16 @@ class _MapScreenState extends State<MapScreen> {
                   onPressed: () {
                     _getLocation();
                   },
-                  tooltip: 'Hely megadása',
-                  child: Icon(Icons.location_searching),
+                  tooltip: 'Specify location',
+                  child: const Icon(Icons.location_searching),
                 ),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 FloatingActionButton(
                   onPressed: () {
-                    // Method to add user time and update markers
                     _addUserTime();
                   },
-                  tooltip: 'Idő hozzáadása',
-                  child: Icon(Icons.timer),
+                  tooltip: 'Add time',
+                  child: const Icon(Icons.timer),
                 ),
               ],
             ),
@@ -135,38 +202,33 @@ class _MapScreenState extends State<MapScreen> {
     );
   }
 
+  // Operations after map creation
   void _onMapCreated(GoogleMapController controller) {
     setState(() {
       mapController = controller;
 
-      // Helyezzünk el egy egyszerű markert a térképen
       markers.add(
-        Marker(
+        const Marker(
           markerId: MarkerId("SampleMarker"),
           position: LatLng(0.0, 0.0),
           infoWindow: InfoWindow(title: "Sample Marker"),
         ),
       );
 
-      // Frissítsük a markereket
       _updateMarkers();
-      
-    if (currentPosition != null) {
-      mapController!.animateCamera(
-        CameraUpdate.newLatLng(LatLng(currentPosition!.latitude, currentPosition!.longitude)),
-      );
-    }
-  });
+
+      _getLocation();
+    });
   }
 
-//update time
+  // Add or update user time
   void _addUserTime() {
     setState(() {
       if (!showUserTimeMarker) {
         showUserTimeMarker = true;
         _updateMarkers();
 
-        timer = Timer.periodic(Duration(minutes: 1), (timer) {
+        timer = Timer.periodic(const Duration(minutes: 1), (timer) {
           if (timeService.currentTime <= 0) {
             showUserTimeMarker = false;
             _updateMarkers();
@@ -182,7 +244,8 @@ class _MapScreenState extends State<MapScreen> {
       }
     });
   }
- // Method to update markers on the map
+
+  // Update markers
   void _updateMarkers() {
     setState(() {
       markers.clear();
@@ -191,12 +254,13 @@ class _MapScreenState extends State<MapScreen> {
         if (busStopLocations[i] != null) {
           markers.add(
             Marker(
-              markerId: MarkerId("Buszmegálló $i"),
+              markerId: MarkerId("Station $i"),
               position: busStopLocations[i]!,
-              icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+              icon: BitmapDescriptor.defaultMarkerWithHue(
+                  BitmapDescriptor.hueBlue),
               infoWindow: InfoWindow(
-                title: busStopNames[i]!, // Buszmegálló nevének megjelenítése címként
-                snippet: "Megálló #$i",
+                title: busStopNames[i]!,
+                snippet: "Bus Stop #$i",
               ),
             ),
           );
@@ -206,60 +270,61 @@ class _MapScreenState extends State<MapScreen> {
       if (currentPosition != null) {
         markers.add(
           Marker(
-            markerId: MarkerId("aktuálisHely"),
-            position: LatLng(currentPosition!.latitude, currentPosition!.longitude),
-            infoWindow: InfoWindow(title: "Az aktuális helyed"),
+            markerId: const MarkerId("aktuálisHely"),
+            position:
+                LatLng(currentPosition!.latitude, currentPosition!.longitude),
+            infoWindow: const InfoWindow(title: "Your current location"),
           ),
         );
 
         if (showUserTimeMarker && timeService.currentTime > 0) {
           markers.add(
             Marker(
-              markerId: MarkerId("userTime"),
-              position: LatLng(currentPosition!.latitude + 0.001, currentPosition!.longitude + 0.001),
-              icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueMagenta),
+              markerId: const MarkerId("ControllerTime"),
+              position: LatLng(currentPosition!.latitude + 0.001,
+                  currentPosition!.longitude + 0.001),
+              icon: BitmapDescriptor.defaultMarkerWithHue(
+                  BitmapDescriptor.hueMagenta),
               infoWindow: InfoWindow(
-                title: "Felhasználói idő",
-                snippet: "Hátralévő idő: ${timeService.currentTime} perc",
+                title: "Controller",
+                snippet: "Remaining time: ${timeService.currentTime} min",
               ),
             ),
           );
         }
       }
-
-      // Térkép frissítése
-      if (mapController != null && busStopLocations.isNotEmpty && busStopLocations[0] != null) {
-        mapController!.animateCamera(CameraUpdate.newLatLng(busStopLocations[0]!));
-      }
     });
   }
-  // Method to get the current location and update markers
+
+  
+
+  // Get current location
   void _getLocation() async {
-  try {
-    Position position = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.high,
-    );
+    try {
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
 
-    print('Aktuális hely: $position');
+      print('Aktuális hely: $position');
 
-    setState(() {
-      currentPosition = position;
+      setState(() {
+        currentPosition = position;
 
-      if (showUserTimeMarker) {
-        mapController?.animateCamera(
-          CameraUpdate.newCameraPosition(
-            CameraPosition(
-              target: LatLng(position.latitude, position.longitude),
-              zoom: 15.0,
+        if (showUserTimeMarker) {
+          mapController?.animateCamera(
+            CameraUpdate.newCameraPosition(
+              CameraPosition(
+                target: LatLng(position.latitude, position.longitude),
+                zoom: 15.0,
+              ),
             ),
-          ),
-        );
-      }
-
-      _updateMarkers();
-    });
-  } catch (e) {
-    print('Hiba az aktuális hely lekérdezésekor: $e');
+          );
+        } else {
+          _updateMarkers();
+        }
+      });
+    } catch (e) {
+      print('Hiba az aktuális hely lekérdezésekor: $e');
+    }
   }
- }
-} 
+}

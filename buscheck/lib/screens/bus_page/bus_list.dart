@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -21,6 +22,8 @@ class _BusListState extends State<BusList> {
   }
 
   Widget build(BuildContext context) {
+    double height = MediaQuery.of(context).size.height;
+    double width = MediaQuery.of(context).size.width;
     return Scaffold(
       appBar: AppBar(
         iconTheme: Theme.of(context).iconTheme,
@@ -43,54 +46,58 @@ class _BusListState extends State<BusList> {
               builder: (BuildContext context,
                   AsyncSnapshot<QuerySnapshot> snapshot) {
                 if (snapshot.hasData) {
-                  // Extract documents from the snapshot
-                  final snap = snapshot.data!.docs;
-                  return ListView.builder(
-                    shrinkWrap: true,
-                    primary: false,
-                    itemCount: snap.length,
-                    itemBuilder: (context, index) {
-                      // Container representing each bus
-                      return Container(
-                        height: 70,
-                        width: double.infinity,
-                        margin: const EdgeInsets.only(bottom: 12),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).scaffoldBackgroundColor,
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Colors.black,
-                              offset: Offset(2, 2),
-                              blurRadius: 10,
-                            ),
-                          ],
-                        ),
-                        child: Stack(
-                          children: [
-                            // Bus details displayed in a row
-                            Row(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(left: 20),
-                                  child: Icon(
-                                    Icons.directions_bus,
-                                    color:
-                                        Theme.of(context).colorScheme.primary,
-                                  ),
-                                ),
-                                Container(
-                                  alignment: Alignment.centerLeft,
-                                  child: Text(
-                                    " - ${snap[index].id}",
-                                    style: TextStyle(
+
+                  if (FirebaseAuth.instance.currentUser != null) {
+                     // Extract documents from the snapshot
+                    final snap = snapshot.data!.docs;
+                    return ListView.builder(
+                      shrinkWrap: true,
+                      primary: false,
+                      itemCount: snap.length,
+                      itemBuilder: (context, index) {
+                         // Container representing each bus
+                        return Container(
+                          height: 70,
+                          width: double.infinity,
+                          margin: EdgeInsets.only(bottom: height * 0.015),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).scaffoldBackgroundColor,
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Colors.black,
+                                offset: Offset(2, 2),
+                                blurRadius: 10,
+                              ),
+                            ],
+                          ),
+                          child: Stack(
+                            children: [
+                              Row(
+                                children: [
+                                  // Bus details displayed in a row
+                                  Padding(
+                                    padding:
+                                        EdgeInsets.only(left: width * 0.03),
+                                    child: Icon(
+                                      Icons.directions_bus,
                                       color:
                                           Theme.of(context).colorScheme.primary,
-                                      fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                                ),
-                                Container(
+                                  Container(
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(
+                                      " - ${snap[index].id}",
+                                      style: TextStyle(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primary,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                   Container(
                                   margin: const EdgeInsets.only(left: 15),
                                   alignment: Alignment.centerLeft,
                                   child: FutureBuilder<double>(
@@ -117,38 +124,120 @@ class _BusListState extends State<BusList> {
                                     },
                                   ),
                                 ),
-                              ],
-                            ),
-                            // Star rating bar allowing users to rate the bus
-                            Container(
-                              margin: const EdgeInsets.only(right: 20),
-                              alignment: Alignment.centerRight,
-                              child: RatingBar.builder(
-                                initialRating: 0,
-                                minRating: 1,
-                                direction: Axis.horizontal,
-                                allowHalfRating: true,
-                                itemCount: 5,
-                                itemSize: 26,
-                                glowColor: Colors.cyan[400],
-                                itemPadding:
-                                    const EdgeInsets.symmetric(horizontal: 0.2),
-                                itemBuilder: (context, _) => const Icon(
-                                  Icons.star,
-                                  color: Colors.amber,
-                                ),
-                                onRatingUpdate: (rating) {
+                                ],
+                              ),
+                              Container(
+                                margin: EdgeInsets.only(right: width * 0.03),
+                                alignment: Alignment.centerRight,
+                                child: RatingBar.builder(
+                                  initialRating: 0,
+                                  minRating: 1,
+                                  direction: Axis.horizontal,
+                                  allowHalfRating: true,
+                                  itemCount: 5,
+                                  itemSize: 26,
+                                  glowColor: Colors.cyan[400],
+                                  itemPadding: EdgeInsets.symmetric(
+                                      horizontal: width * 0.003),
+                                  itemBuilder: (context, _) => const Icon(
+                                    Icons.star,
+                                    color: Colors.amber,
+                                  ),
+                                  onRatingUpdate: (rating) {
                                   // Update the rating in Firestore when user rates
                                   updateRatingInFirestore(
                                       snap[index].id, rating);
-                                },
+                                  },
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  );
+                            ],
+                          ),
+                        );
+                      },
+                    );
+                  } else {
+                    final snap = snapshot.data!.docs;
+                    return ListView.builder(
+                      shrinkWrap: true,
+                      primary: false,
+                      itemCount: snap.length,
+                      itemBuilder: (context, index) {
+                        return Container(
+                          height: 70,
+                          width: double.infinity,
+                          margin: EdgeInsets.only(bottom: height * 0.015),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).scaffoldBackgroundColor,
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Colors.black,
+                                offset: Offset(2, 2),
+                                blurRadius: 10,
+                              ),
+                            ],
+                          ),
+                          child: Stack(
+                            children: [
+                              Row(
+                                children: [
+                                  Padding(
+                                    padding:
+                                        EdgeInsets.only(left: width * 0.03),
+                                    child: Icon(
+                                      Icons.directions_bus,
+                                      color:
+                                          Theme.of(context).colorScheme.primary,
+                                    ),
+                                  ),
+
+                                  Container(
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(
+                                      " - ${snap[index].id}",
+                                      style: TextStyle(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primary,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  Container(
+                                  margin: const EdgeInsets.only(left: 15),
+                                  alignment: Alignment.centerLeft,
+                                  child: FutureBuilder<double>(
+                                    // Display average rating for the bus
+                                    future: getAverageRating(snap[index].id),
+                                    builder: (context, ratingSnapshot) {
+                                      if (ratingSnapshot.connectionState ==
+                                          ConnectionState.waiting) {
+                                        return CircularProgressIndicator();
+                                      } else if (ratingSnapshot.hasError) {
+                                        return Text(
+                                            'Error: ${ratingSnapshot.error}');
+                                      } else {
+                                        double averageRating =
+                                            ratingSnapshot.data ?? 0.0;
+                                        return Text(
+                                          "Rating: $averageRating/5.00",
+                                          style: TextStyle(
+                                            color: Colors.cyan[400],
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        );
+                                      }
+                                    },
+                                  ),
+                                ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    );
+                  }
                 } else {
                   // Return an empty container if no data is available
                   return const SizedBox();

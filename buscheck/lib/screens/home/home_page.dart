@@ -1,9 +1,11 @@
-
 import 'package:buscheck/screens/home/map.dart';
 import 'package:buscheck/screens/home/menu.dart';
 import 'package:flutter/material.dart';
 import 'package:iconoir_flutter/bus.dart';
 import 'package:iconoir_flutter/bus_stop.dart';
+import 'package:buscheck/screens/home/search.dart';
+
+
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -13,6 +15,20 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+ 
+ final GlobalKey<MapScreenState> _mapScreenKey = GlobalKey<MapScreenState>();
+
+  void _addUserTime() {
+    MapScreenState? mapScreenState = _mapScreenKey.currentState;
+    mapScreenState?.addControllerTimeMarker();
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('User time added!'),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     //double height = MediaQuery.of(context).size.height;
@@ -39,7 +55,9 @@ class _HomeState extends State<Home> {
       body: Column(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          MapScreen(),
+          // ignore: prefer_const_constructors
+         // MapScreen(),
+          MapScreen(key: _mapScreenKey, addUserTimeCallback: _addUserTime),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
@@ -56,7 +74,9 @@ class _HomeState extends State<Home> {
               ),
               FloatingActionButton(
                 heroTag: null,
-                onPressed: null,
+                 onPressed: () {
+    _mapScreenKey.currentState?.addUserTimeCallback();
+  },
                 backgroundColor: Colors.cyan[400],
                 child: Icon(
                   Icons.local_police_outlined,
@@ -66,14 +86,19 @@ class _HomeState extends State<Home> {
               ),
               FloatingActionButton(
                   heroTag: null,
-                  onPressed: null,
+                 onPressed: () {
+                 Navigator.push(
+                 context,
+                 MaterialPageRoute(builder: (context) => SearchBus()), // Itt helyettesítsd be a saját kereső osztályodat
+                   );
+                 },
                   backgroundColor: Colors.cyan[400],
                   child: BusStop(
                     width: 35,
                     color: Theme.of(context).primaryColor,
                   ))
             ],
-          )
+          ),
         ],
       ),
     );
