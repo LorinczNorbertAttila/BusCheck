@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 class BusList extends StatefulWidget {
   const BusList({super.key});
@@ -157,7 +156,31 @@ class _BusListState extends State<BusList> {
                     );
                   } else {
                     final snap = snapshot.data!.docs;
-                    return ListView.builder(
+                    return Column(
+                      children: [
+                         Padding(
+                           padding: EdgeInsets.only(bottom: height * 0.02),
+                           child: Row(
+                                         mainAxisAlignment: MainAxisAlignment.center,
+                                         children: [
+                                           const Text(
+                                             'If you want to rate the buses, ',
+                                             style: TextStyle(fontFamily: 'LilitaOne', fontSize: 15),
+                                           ),
+                                           InkWell(
+                                             onTap: () {
+                                               Navigator.pushNamed(context, '/signin');
+                                             },
+                                             child: const Text(
+                                               'SIGN IN',
+                                               style: TextStyle(fontFamily: 'LilitaOne', fontSize: 15),
+                                             ),
+                                           ),
+                                         ],
+                                       ),
+                         ),
+            
+                        ListView.builder(
                       shrinkWrap: true,
                       primary: false,
                       itemCount: snap.length,
@@ -236,6 +259,9 @@ class _BusListState extends State<BusList> {
                           ),
                         );
                       },
+                    
+                    ),
+                    ],
                     );
                   }
                 } else {
