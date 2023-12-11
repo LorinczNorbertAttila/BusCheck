@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class BusList extends StatefulWidget {
   const BusList({super.key});
@@ -11,7 +12,15 @@ class BusList extends StatefulWidget {
 }
 
 class _BusListState extends State<BusList> {
+  late FirebaseAuth _auth;
+
   @override
+  void initState() {
+    super.initState();
+    // Initialize Firebase authentication
+    _auth = FirebaseAuth.instance;
+  }
+
   Widget build(BuildContext context) {
     double height = MediaQuery.of(context).size.height;
     double width = MediaQuery.of(context).size.width;
@@ -31,18 +40,22 @@ class _BusListState extends State<BusList> {
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
+            // StreamBuilder to listen for changes in the "Bus" collection
             StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance.collection("Bus").snapshots(),
               builder: (BuildContext context,
                   AsyncSnapshot<QuerySnapshot> snapshot) {
                 if (snapshot.hasData) {
+
                   if (FirebaseAuth.instance.currentUser != null) {
+                     // Extract documents from the snapshot
                     final snap = snapshot.data!.docs;
                     return ListView.builder(
                       shrinkWrap: true,
                       primary: false,
                       itemCount: snap.length,
                       itemBuilder: (context, index) {
+                         // Container representing each bus
                         return Container(
                           height: 70,
                           width: double.infinity,
@@ -62,6 +75,7 @@ class _BusListState extends State<BusList> {
                             children: [
                               Row(
                                 children: [
+                                  // Bus details displayed in a row
                                   Padding(
                                     padding:
                                         EdgeInsets.only(left: width * 0.03),
@@ -83,18 +97,33 @@ class _BusListState extends State<BusList> {
                                       ),
                                     ),
                                   ),
-                                  Container(
-                                    margin:
-                                        EdgeInsets.only(left: width * 0.025),
-                                    alignment: Alignment.centerLeft,
-                                    child: Text(
-                                      "Rating: ${snap[index]['Rating']}/5.00",
-                                      style: TextStyle(
-                                        color: Colors.cyan[400],
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
+                                   Container(
+                                  margin: const EdgeInsets.only(left: 15),
+                                  alignment: Alignment.centerLeft,
+                                  child: FutureBuilder<double>(
+                                    // Display average rating for the bus
+                                    future: getAverageRating(snap[index].id),
+                                    builder: (context, ratingSnapshot) {
+                                      if (ratingSnapshot.connectionState ==
+                                          ConnectionState.waiting) {
+                                        return CircularProgressIndicator();
+                                      } else if (ratingSnapshot.hasError) {
+                                        return Text(
+                                            'Error: ${ratingSnapshot.error}');
+                                      } else {
+                                        double averageRating =
+                                            ratingSnapshot.data ?? 0.0;
+                                        return Text(
+                                          "Rating: $averageRating/5.00",
+                                          style: TextStyle(
+                                            color: Colors.cyan[400],
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        );
+                                      }
+                                    },
                                   ),
+                                ),
                                 ],
                               ),
                               Container(
@@ -114,7 +143,11 @@ class _BusListState extends State<BusList> {
                                     Icons.star,
                                     color: Colors.amber,
                                   ),
-                                  onRatingUpdate: (rating) {},
+                                  onRatingUpdate: (rating) {
+                                  // Update the rating in Firestore when user rates
+                                  updateRatingInFirestore(
+                                      snap[index].id, rating);
+                                  },
                                 ),
                               ),
                             ],
@@ -157,6 +190,7 @@ class _BusListState extends State<BusList> {
                                           Theme.of(context).colorScheme.primary,
                                     ),
                                   ),
+
                                   Container(
                                     alignment: Alignment.centerLeft,
                                     child: Text(
@@ -170,17 +204,32 @@ class _BusListState extends State<BusList> {
                                     ),
                                   ),
                                   Container(
-                                    margin:
-                                        EdgeInsets.only(left: width * 0.025),
-                                    alignment: Alignment.centerLeft,
-                                    child: Text(
-                                      "Rating: ${snap[index]['Rating']}/5.00",
-                                      style: TextStyle(
-                                        color: Colors.cyan[400],
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
+                                  margin: const EdgeInsets.only(left: 15),
+                                  alignment: Alignment.centerLeft,
+                                  child: FutureBuilder<double>(
+                                    // Display average rating for the bus
+                                    future: getAverageRating(snap[index].id),
+                                    builder: (context, ratingSnapshot) {
+                                      if (ratingSnapshot.connectionState ==
+                                          ConnectionState.waiting) {
+                                        return CircularProgressIndicator();
+                                      } else if (ratingSnapshot.hasError) {
+                                        return Text(
+                                            'Error: ${ratingSnapshot.error}');
+                                      } else {
+                                        double averageRating =
+                                            ratingSnapshot.data ?? 0.0;
+                                        return Text(
+                                          "Rating: $averageRating/5.00",
+                                          style: TextStyle(
+                                            color: Colors.cyan[400],
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        );
+                                      }
+                                    },
                                   ),
+                                ),
                                 ],
                               ),
                             ],
@@ -190,6 +239,7 @@ class _BusListState extends State<BusList> {
                     );
                   }
                 } else {
+                  // Return an empty container if no data is available
                   return const SizedBox();
                 }
               },
@@ -198,5 +248,80 @@ class _BusListState extends State<BusList> {
         ),
       ),
     );
+  }
+
+  // Update Firestore with the user's rating for a specific bus
+  void updateRatingInFirestore(String busId, double rating) {
+    User? user = _auth.currentUser;
+
+    if (user != null) {
+      String userId = user.uid;
+
+      // Check if the user has already rated this bus
+      checkIfUserRatedBus(userId, busId).then((hasRated) {
+        if (!hasRated) {
+          // Add the rating to the "Ratings" collection
+          FirebaseFirestore.instance.collection('Ratings').add({
+            'busId': busId,
+            'userId': userId,
+            'rating': rating,
+            'timestamp': FieldValue.serverTimestamp(),
+          }).then((_) {
+            print('Rating added to Ratings collection successfully');
+
+            // Retrieve and update average ratings
+            getAverageRating(busId).then((averageRating) {
+              // Update the Bus collection with the average rating
+              CollectionReference buses =
+                  FirebaseFirestore.instance.collection('Bus');
+              buses.doc(busId).update({'Rating': averageRating}).then((value) {
+                print('Bus rating updated successfully');
+              }).catchError((error) {
+                print('Failed to update bus rating: $error');
+              });
+            });
+          }).catchError((error) {
+            print('Failed to add rating to Ratings collection: $error');
+          });
+        } else {
+          print('User has already rated this bus.');
+        }
+      });
+    }
+  }
+
+  // Check if the user has already rated a specific bus
+  Future<bool> checkIfUserRatedBus(String userId, String busId) async {
+    QuerySnapshot<Map<String, dynamic>> querySnapshot =
+        await FirebaseFirestore.instance
+            .collection('Ratings')
+            .where('busId', isEqualTo: busId)
+            .where('userId', isEqualTo: userId)
+            .get();
+
+    return querySnapshot.docs.isNotEmpty;
+  }
+
+  // Retrieve the average rating for a specific bus
+  Future<double> getAverageRating(String busId) async {
+    QuerySnapshot<Map<String, dynamic>> querySnapshot =
+        await FirebaseFirestore.instance
+            .collection('Ratings')
+            .where('busId', isEqualTo: busId)
+            .get();
+
+    List<double> ratings = querySnapshot.docs
+        .map((doc) => doc['rating'] as double)
+        .toList();
+
+    if (ratings.isNotEmpty) {
+      double sum = ratings.reduce((a, b) => a + b);
+      double average = sum / ratings.length;
+
+      // Round to the nearest half or whole number
+      return (average * 2).roundToDouble() / 2;
+    } else {
+      return 0.0;
+    }
   }
 }
