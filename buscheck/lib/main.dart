@@ -38,6 +38,6 @@ class MyApp extends StatelessWidget {
               '/menu': (context) => const Menu(),
               '/buslist': (context) => const BusList(),
             },
-            home:  Home());
+            home:  const Home());
       });
 }

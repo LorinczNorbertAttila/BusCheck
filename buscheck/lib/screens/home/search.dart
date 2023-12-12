@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+// Widget class for the main search functionality
 class SearchBus extends StatefulWidget {
   const SearchBus({Key? key}) : super(key: key);
 
   @override
-  _ValamiState createState() => _ValamiState();
+  _SearchState createState() => _SearchState();
 }
 
-class _ValamiState extends State<SearchBus> {
+class _SearchState extends State<SearchBus> {
   String searchQuery = '';
   late TextEditingController searchController;
   String selectedSearchType = 'Bus'; // Default value
+  List<dynamic>? busLines;
 
   @override
   void initState() {
@@ -27,6 +29,7 @@ class _ValamiState extends State<SearchBus> {
 
   @override
   Widget build(BuildContext context) {
+    // Scaffold widget for the main UI structure
     return Scaffold(
       appBar: AppBar(
         title: Text('Firestore Data'),
@@ -40,6 +43,7 @@ class _ValamiState extends State<SearchBus> {
       body: StreamBuilder(
         stream: FirebaseFirestore.instance.collection('Bus lines').snapshots(),
         builder: (context, snapshot) {
+          // Check connection state and show appropriate UI
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
           }
@@ -50,6 +54,7 @@ class _ValamiState extends State<SearchBus> {
 
           var busLines = snapshot.data?.docs;
 
+          // Display a list of bus lines based on Firestore data
           return ListView.builder(
             itemCount: busLines?.length,
             itemBuilder: (context, index) {
@@ -57,20 +62,21 @@ class _ValamiState extends State<SearchBus> {
               var arrivalTimes = busLines?[index]['Arrival time'] as List<dynamic>? ?? [];
               var busStopsReferences = busLines?[index]['Bus stops_ID'] as List<dynamic>? ?? [];
 
+              // Display bus information asynchronously using FutureBuilder
               return FutureBuilder(
                 future: busIdReference?.get(),
                 builder: (BuildContext context, AsyncSnapshot<DocumentSnapshot> busSnapshot) {
                   if (busSnapshot.connectionState == ConnectionState.waiting) {
-                    return SizedBox.shrink(); // Ha még mindig tölt, ne jelenjen meg semmi
+                    return SizedBox.shrink(); // Don't show anything while still loading
                   }
 
                   if (busSnapshot.hasError || busSnapshot.data == null) {
-                    return SizedBox.shrink(); // Ha hiba van, vagy nincs adat, ne jelenjen meg semmi
+                    return SizedBox.shrink(); // Don't show anything if there's an error or no data
                   }
 
                   var busId = busSnapshot.data?.id;
 
-                  // Feltétel vizsgálata, és a megfelelő widget visszaadása
+                  // Check condition and return the appropriate widget
                   return _buildListTile(busId, busStopsReferences, arrivalTimes);
                 },
               );
@@ -81,28 +87,30 @@ class _ValamiState extends State<SearchBus> {
     );
   }
 
-  Widget _buildListTile(String? busId, List<dynamic> busStopsReferences, List<dynamic> arrivalTimes) {
+  // Build a ListTile widget based on search results
+
+Widget _buildListTile(String? busId, List<dynamic> busStopsReferences, List<dynamic> arrivalTimes) {
     return FutureBuilder(
       future: _hasQuery(busId, busStopsReferences, searchQuery),
       builder: (BuildContext context, AsyncSnapshot<bool> hasQuerySnapshot) {
         if (hasQuerySnapshot.connectionState == ConnectionState.waiting) {
-          return SizedBox.shrink(); // Ha még mindig tölt, ne jelenjen meg semmi
+          return SizedBox.shrink(); // Don't show anything while still loading
         }
 
         if (hasQuerySnapshot.hasError) {
-          return SizedBox.shrink(); // Ha hiba van, ne jelenjen meg semmi
+          return SizedBox.shrink(); // Don't show anything if there's an error
         }
 
         var hasQuery = hasQuerySnapshot.data ?? false;
 
+        // Display ListTile if there's a match, otherwise return an empty widget
         if (hasQuery) {
-          // Ha van találat, akkor megjelenítjük a csempét
           return ListTile(
             title: Text('Bus Number: $busId'),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Bus stops_ID
+                // Display bus stops asynchronously using FutureBuilder
                 FutureBuilder(
                   future: _getBusStopsWithTime(busStopsReferences, arrivalTimes),
                   builder: (BuildContext context, AsyncSnapshot<List<String>> stopsSnapshot) {
@@ -128,14 +136,16 @@ class _ValamiState extends State<SearchBus> {
             ),
           );
         } else {
-          // Ha nincs találat, üres widgetet adunk vissza
-          return SizedBox.shrink();
+          return SizedBox.shrink(); // Return an empty widget if there's no match
         }
       },
     );
   }
 
+  // Show a search dialog to input search queries
   Future<void> _showSearchDialog(BuildContext context) async {
+    searchController.clear(); // Always clear the TextField value before a new search
+
     return showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -143,20 +153,6 @@ class _ValamiState extends State<SearchBus> {
           title: Text('Search Bus by Name or Stop'),
           content: Column(
             children: [
-              DropdownButton<String>(
-                value: selectedSearchType,
-                onChanged: (String? newValue) {
-                  setState(() {
-                    selectedSearchType = newValue!;
-                  });
-                },
-                items: <String>['Bus', 'Stop'].map<DropdownMenuItem<String>>((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                  );
-                }).toList(),
-              ),
               SizedBox(height: 16),
               TextField(
                 controller: searchController,
@@ -173,12 +169,19 @@ class _ValamiState extends State<SearchBus> {
           ),
           actions: [
             TextButton(
-              onPressed: () {
+              onPressed: () async {
+                // Close the dialog
                 Navigator.of(context).pop();
-                setState(() {
-                  searchQuery = '';
-                  searchController.clear();
-                });
+                // Perform the search
+                 await _performSearch();
+              },
+              child: Text('OK'),
+            ),
+            TextButton(
+              onPressed: () {
+                // Clear the search query, then close the dialog
+                _clearSearch();
+                Navigator.of(context).pop();
               },
               child: Text('Cancel'),
             ),
@@ -188,6 +191,14 @@ class _ValamiState extends State<SearchBus> {
     );
   }
 
+  // Clear the search query
+  void _clearSearch() {
+    setState(() {
+      searchQuery = '';
+    });
+  }
+
+  // Retrieve bus stops with arrival times
   Future<List<String>> _getBusStopsWithTime(List<dynamic> busStopsReferences, List<dynamic> arrivalTimes) async {
     List<String> stopsWithTime = [];
 
@@ -209,23 +220,61 @@ class _ValamiState extends State<SearchBus> {
     return stopsWithTime;
   }
 
-  Future<bool> _hasQuery(String? busId, List<dynamic> busStopsReferences, String query) async {
-    if (busId != null && busId.toLowerCase().contains(query.toLowerCase())) {
-      return true;
-    }
+  // Check if there's a match for the search query
+Future<bool> _hasQuery(String? busId, List<dynamic> busStopsReferences, String query) async {
+  bool hasBusIdMatch = busId != null && busId.toLowerCase().contains(query.toLowerCase());
 
-    for (var reference in busStopsReferences) {
-      if (reference is DocumentReference) {
-        var stopSnapshot = await reference.get();
-        if (stopSnapshot.exists) {
-          var name = stopSnapshot['Name'] as String?;
-          if (name != null && name.toLowerCase().contains(query.toLowerCase())) {
-            return true;
-          }
+  if (hasBusIdMatch) {
+    return true;
+  }
+
+  for (var reference in busStopsReferences) {
+    if (reference is DocumentReference) {
+      var stopSnapshot = await reference.get();
+      if (stopSnapshot.exists) {
+        var name = stopSnapshot['Name'] as String?;
+        if (name != null && name.toLowerCase().contains(query.toLowerCase())) {
+          return true;
         }
       }
     }
-
-    return false;
   }
+
+  // No result
+  return false;
+}
+
+
+//test search
+Future<void> _performSearch() async {
+  var matchingResults = <dynamic>[];
+
+  for (var busLine in busLines ?? []) {
+    var hasQuery = await _hasQuery(
+      busLine['Bus_ID'],
+      busLine['Bus stops_ID'],
+      searchQuery,
+    );
+
+    if (hasQuery) {
+      matchingResults.add(busLine);
+    }
+  }
+
+  // Only execute setState if we have actually found results
+  if (matchingResults.isNotEmpty) {
+    setState(() {
+    });
+  } else {
+    // If no match is found, display the message
+    ScaffoldMessenger.of(context).removeCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('No matching results found.'),
+      ),
+    );
+  }
+}
+
+
 }
