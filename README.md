@@ -18,9 +18,7 @@ A very useful application for bus tracking and route finding.
 
 • Bus tracking - Under construction ⚠️ 
 
-## Installation: 
-
-- Requirement for installation:
+## Requirements:
  
   • flutter: [download flutter](https://docs.flutter.dev/get-started/install)
   
@@ -31,6 +29,9 @@ A very useful application for bus tracking and route finding.
   • IOS version 11+
   
 If you want to setup VS Code for flutter projects see [this](https://www.geeksforgeeks.org/getting-started-with-cross-platform-mobile-application-using-flutter/?ref=lbp) 
+
+## Installation: 
+You need to clone the repository on your pc, and open in android studio (or any software where can you run a flutter application).
 
 ## How to use: 
 
