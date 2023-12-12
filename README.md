@@ -16,9 +16,9 @@ A very useful application for bus tracking and route finding.
 
 • Search for buses and stops ✅
 
-• Route finding - Under construction ⚠️ 
+• Route finding - Future feature ⚠️ 
 
-• Bus tracking - Under construction ⚠️ 
+• Bus tracking - Future feature ⚠️ 
 
 
 ## Requirements:
