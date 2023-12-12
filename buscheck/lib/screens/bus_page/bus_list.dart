@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
 class BusList extends StatefulWidget {
@@ -45,16 +46,15 @@ class _BusListState extends State<BusList> {
               builder: (BuildContext context,
                   AsyncSnapshot<QuerySnapshot> snapshot) {
                 if (snapshot.hasData) {
-
                   if (FirebaseAuth.instance.currentUser != null) {
-                     // Extract documents from the snapshot
+                    // Extract documents from the snapshot
                     final snap = snapshot.data!.docs;
                     return ListView.builder(
                       shrinkWrap: true,
                       primary: false,
                       itemCount: snap.length,
                       itemBuilder: (context, index) {
-                         // Container representing each bus
+                        // Container representing each bus
                         return Container(
                           height: 70,
                           width: double.infinity,
@@ -96,33 +96,33 @@ class _BusListState extends State<BusList> {
                                       ),
                                     ),
                                   ),
-                                   Container(
-                                  margin: const EdgeInsets.only(left: 15),
-                                  alignment: Alignment.centerLeft,
-                                  child: FutureBuilder<double>(
-                                    // Display average rating for the bus
-                                    future: getAverageRating(snap[index].id),
-                                    builder: (context, ratingSnapshot) {
-                                      if (ratingSnapshot.connectionState ==
-                                          ConnectionState.waiting) {
-                                        return CircularProgressIndicator();
-                                      } else if (ratingSnapshot.hasError) {
-                                        return Text(
-                                            'Error: ${ratingSnapshot.error}');
-                                      } else {
-                                        double averageRating =
-                                            ratingSnapshot.data ?? 0.0;
-                                        return Text(
-                                          "Rating: $averageRating/5.00",
-                                          style: TextStyle(
-                                            color: Colors.cyan[400],
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        );
-                                      }
-                                    },
+                                  Container(
+                                    margin: const EdgeInsets.only(left: 15),
+                                    alignment: Alignment.centerLeft,
+                                    child: FutureBuilder<double>(
+                                      // Display average rating for the bus
+                                      future: getAverageRating(snap[index].id),
+                                      builder: (context, ratingSnapshot) {
+                                        if (ratingSnapshot.connectionState ==
+                                            ConnectionState.waiting) {
+                                          return CircularProgressIndicator();
+                                        } else if (ratingSnapshot.hasError) {
+                                          return Text(
+                                              'Error: ${ratingSnapshot.error}');
+                                        } else {
+                                          double averageRating =
+                                              ratingSnapshot.data ?? 0.0;
+                                          return Text(
+                                            "Rating: $averageRating/5.00",
+                                            style: TextStyle(
+                                              color: Colors.cyan[400],
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          );
+                                        }
+                                      },
+                                    ),
                                   ),
-                                ),
                                 ],
                               ),
                               Container(
@@ -143,9 +143,9 @@ class _BusListState extends State<BusList> {
                                     color: Colors.amber,
                                   ),
                                   onRatingUpdate: (rating) {
-                                  // Update the rating in Firestore when user rates
-                                  updateRatingInFirestore(
-                                      snap[index].id, rating);
+                                    // Update the rating in Firestore when user rates
+                                    updateRatingInFirestore(
+                                        snap[index].id, rating);
                                   },
                                 ),
                               ),
@@ -158,110 +158,118 @@ class _BusListState extends State<BusList> {
                     final snap = snapshot.data!.docs;
                     return Column(
                       children: [
-                         Padding(
-                           padding: EdgeInsets.only(bottom: height * 0.02),
-                           child: Row(
-                                         mainAxisAlignment: MainAxisAlignment.center,
-                                         children: [
-                                           const Text(
-                                             'If you want to rate the buses, ',
-                                             style: TextStyle(fontFamily: 'LilitaOne', fontSize: 15),
-                                           ),
-                                           InkWell(
-                                             onTap: () {
-                                               Navigator.pushNamed(context, '/signin');
-                                             },
-                                             child: const Text(
-                                               'SIGN IN',
-                                               style: TextStyle(fontFamily: 'LilitaOne', fontSize: 15),
-                                             ),
-                                           ),
-                                         ],
-                                       ),
-                         ),
-            
-                        ListView.builder(
-                      shrinkWrap: true,
-                      primary: false,
-                      itemCount: snap.length,
-                      itemBuilder: (context, index) {
-                        return Container(
-                          height: 70,
-                          width: double.infinity,
-                          margin: EdgeInsets.only(bottom: height * 0.015),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).scaffoldBackgroundColor,
-                            borderRadius: BorderRadius.circular(20),
-                            boxShadow: const [
-                              BoxShadow(
-                                color: Colors.black,
-                                offset: Offset(2, 2),
-                                blurRadius: 10,
+                        Padding(
+                          padding: EdgeInsets.only(bottom: height * 0.02),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Text(
+                                'If you want to rate the buses, ',
+                                style: TextStyle(
+                                    fontFamily: 'LilitaOne', fontSize: 15),
+                              ),
+                              InkWell(
+                                onTap: () {
+                                  Navigator.pushNamed(context, '/signin');
+                                },
+                                child: const Text(
+                                  'SIGN IN',
+                                  style: TextStyle(
+                                      fontFamily: 'LilitaOne', fontSize: 15),
+                                )
+                                    .animate()
+                                    .shake(curve: Curves.easeInOutCubic, hz: 3)
+                                    .scaleXY(begin: 0.8)
+                                    .tint(color: Colors.red, end: 0.6),
                               ),
                             ],
                           ),
-                          child: Stack(
-                            children: [
-                              Row(
-                                children: [
-                                  Padding(
-                                    padding:
-                                        EdgeInsets.only(left: width * 0.03),
-                                    child: Icon(
-                                      Icons.directions_bus,
-                                      color:
-                                          Theme.of(context).colorScheme.primary,
-                                    ),
+                        ),
+                        ListView.builder(
+                          shrinkWrap: true,
+                          primary: false,
+                          itemCount: snap.length,
+                          itemBuilder: (context, index) {
+                            return Container(
+                              height: 70,
+                              width: double.infinity,
+                              margin: EdgeInsets.only(bottom: height * 0.015),
+                              decoration: BoxDecoration(
+                                color:
+                                    Theme.of(context).scaffoldBackgroundColor,
+                                borderRadius: BorderRadius.circular(20),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Colors.black,
+                                    offset: Offset(2, 2),
+                                    blurRadius: 10,
                                   ),
-
-                                  Container(
-                                    alignment: Alignment.centerLeft,
-                                    child: Text(
-                                      " - ${snap[index].id}",
-                                      style: TextStyle(
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .primary,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                  Container(
-                                  margin: const EdgeInsets.only(left: 15),
-                                  alignment: Alignment.centerLeft,
-                                  child: FutureBuilder<double>(
-                                    // Display average rating for the bus
-                                    future: getAverageRating(snap[index].id),
-                                    builder: (context, ratingSnapshot) {
-                                      if (ratingSnapshot.connectionState ==
-                                          ConnectionState.waiting) {
-                                        return CircularProgressIndicator();
-                                      } else if (ratingSnapshot.hasError) {
-                                        return Text(
-                                            'Error: ${ratingSnapshot.error}');
-                                      } else {
-                                        double averageRating =
-                                            ratingSnapshot.data ?? 0.0;
-                                        return Text(
-                                          "Rating: $averageRating/5.00",
-                                          style: TextStyle(
-                                            color: Colors.cyan[400],
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        );
-                                      }
-                                    },
-                                  ),
-                                ),
                                 ],
                               ),
-                            ],
-                          ),
-                        );
-                      },
-                    
-                    ),
-                    ],
+                              child: Stack(
+                                children: [
+                                  Row(
+                                    children: [
+                                      Padding(
+                                        padding:
+                                            EdgeInsets.only(left: width * 0.03),
+                                        child: Icon(
+                                          Icons.directions_bus,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .primary,
+                                        ),
+                                      ),
+                                      Container(
+                                        alignment: Alignment.centerLeft,
+                                        child: Text(
+                                          " - ${snap[index].id}",
+                                          style: TextStyle(
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .primary,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                      Container(
+                                        margin: const EdgeInsets.only(left: 15),
+                                        alignment: Alignment.centerLeft,
+                                        child: FutureBuilder<double>(
+                                          // Display average rating for the bus
+                                          future:
+                                              getAverageRating(snap[index].id),
+                                          builder: (context, ratingSnapshot) {
+                                            if (ratingSnapshot
+                                                    .connectionState ==
+                                                ConnectionState.waiting) {
+                                              return CircularProgressIndicator();
+                                            } else if (ratingSnapshot
+                                                .hasError) {
+                                              return Text(
+                                                  'Error: ${ratingSnapshot.error}');
+                                            } else {
+                                              double averageRating =
+                                                  ratingSnapshot.data ?? 0.0;
+                                              return Text(
+                                                "Rating: $averageRating/5.00",
+                                                style: TextStyle(
+                                                  color: Colors.cyan[400],
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              );
+                                            }
+                                          },
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                      ],
                     );
                   }
                 } else {
@@ -318,27 +326,26 @@ class _BusListState extends State<BusList> {
 
   // Check if the user has already rated a specific bus
   Future<bool> checkIfUserRatedBus(String userId, String busId) async {
-    QuerySnapshot<Map<String, dynamic>> querySnapshot =
-        await FirebaseFirestore.instance
-            .collection('Ratings')
-            .where('busId', isEqualTo: busId)
-            .where('userId', isEqualTo: userId)
-            .get();
+    QuerySnapshot<Map<String, dynamic>> querySnapshot = await FirebaseFirestore
+        .instance
+        .collection('Ratings')
+        .where('busId', isEqualTo: busId)
+        .where('userId', isEqualTo: userId)
+        .get();
 
     return querySnapshot.docs.isNotEmpty;
   }
 
   // Retrieve the average rating for a specific bus
   Future<double> getAverageRating(String busId) async {
-    QuerySnapshot<Map<String, dynamic>> querySnapshot =
-        await FirebaseFirestore.instance
-            .collection('Ratings')
-            .where('busId', isEqualTo: busId)
-            .get();
+    QuerySnapshot<Map<String, dynamic>> querySnapshot = await FirebaseFirestore
+        .instance
+        .collection('Ratings')
+        .where('busId', isEqualTo: busId)
+        .get();
 
-    List<double> ratings = querySnapshot.docs
-        .map((doc) => doc['rating'] as double)
-        .toList();
+    List<double> ratings =
+        querySnapshot.docs.map((doc) => doc['rating'] as double).toList();
 
     if (ratings.isNotEmpty) {
       double sum = ratings.reduce((a, b) => a + b);

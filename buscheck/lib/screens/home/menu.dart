@@ -3,6 +3,7 @@ import 'package:buscheck/services/auth.dart';
 import 'package:buscheck/theme/theme_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 class Menu extends StatefulWidget {
   const Menu({super.key});
@@ -63,7 +64,9 @@ class _MenuState extends State<Menu> {
                     'Sign out',
                     style: TextStyle(fontFamily: 'LilitaOne', fontSize: 22),
                   ),
-                ),
+                )
+                    .animate(onPlay: (controller) => controller.repeat())
+                    .shakeX(delay: 1.seconds),
               ],
             ),
             Row(
