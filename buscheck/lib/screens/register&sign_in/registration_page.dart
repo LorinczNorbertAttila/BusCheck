@@ -1,5 +1,6 @@
 import 'package:buscheck/services/auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 class Registration extends StatefulWidget {
   const Registration({super.key});
@@ -84,30 +85,32 @@ class _RegistrationState extends State<Registration> {
               ),
               const SizedBox(height: 20.0),
               ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.cyan[400],
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(32.0)),
-                    minimumSize: const Size(100, 40),
-                  ),
-                  child: const Text(
-                    'Register',
-                    style: TextStyle(fontFamily: 'LilitaOne', fontSize: 20),
-                  ),
-                  onPressed: () async {
-                    if (_formKey.currentState!.validate()) {
-                      dynamic result = await _auth.registerWithEmailAndPassword(
-                          email, password);
-                      if (result == null) {
-                        setState(() {
-                          error = 'Please supply a valid email';
-                        });
-                      } else {
-                        // ignore: use_build_context_synchronously
-                        Navigator.pushNamed(context, '/home');
-                      }
-                    }
-                  }),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.cyan[400],
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(32.0)),
+                        minimumSize: const Size(100, 40),
+                      ),
+                      child: const Text(
+                        'Register',
+                        style: TextStyle(fontFamily: 'LilitaOne', fontSize: 20),
+                      ),
+                      onPressed: () async {
+                        if (_formKey.currentState!.validate()) {
+                          dynamic result = await _auth
+                              .registerWithEmailAndPassword(email, password);
+                          if (result == null) {
+                            setState(() {
+                              error = 'Please supply a valid email';
+                            });
+                          } else {
+                            // ignore: use_build_context_synchronously
+                            Navigator.pushNamed(context, '/home');
+                          }
+                        }
+                      })
+                  .animate(onPlay: (controller) => controller.repeat())
+                  .shakeX(delay: 1.seconds),
               const SizedBox(height: 12.0),
               Text(
                 error,
@@ -122,14 +125,18 @@ class _RegistrationState extends State<Registration> {
                     style: TextStyle(fontFamily: 'LilitaOne', fontSize: 15),
                   ),
                   InkWell(
-                    onTap: () {
-                      Navigator.pushNamed(context, '/signin');
-                    },
-                    child: const Text(
-                      'SIGN IN',
-                      style: TextStyle(fontFamily: 'LilitaOne', fontSize: 15),
-                    ),
-                  ),
+                          onTap: () {
+                            Navigator.pushNamed(context, '/signin');
+                          },
+                          child: const Text(
+                            'SIGN IN',
+                            style: TextStyle(
+                                fontFamily: 'LilitaOne', fontSize: 15),
+                          ))
+                      .animate()
+                      .shake(curve: Curves.easeInOutCubic, hz: 3)
+                      .scaleXY(begin: 0.8)
+                      .tint(color: Colors.red, end: 0.6),
                 ],
               ),
             ],
@@ -216,30 +223,33 @@ class _SignInState extends State<SignIn> {
               ),
               const SizedBox(height: 20.0),
               ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.cyan[400],
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(32.0)),
-                    minimumSize: const Size(100, 40),
-                  ),
-                  child: const Text(
-                    'Sign In',
-                    style: TextStyle(fontFamily: 'LilitaOne', fontSize: 20),
-                  ),
-                  onPressed: () async {
-                    if (_formKey.currentState!.validate()) {
-                      dynamic result = await _auth.signInWithEmailAndPassword(
-                          email, password);
-                      if (result == null) {
-                        setState(() {
-                          error = 'Could not sign in with those credentials';
-                        });
-                      } else {
-                        // ignore: use_build_context_synchronously
-                        Navigator.pushNamed(context, '/home');
-                      }
-                    }
-                  }),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.cyan[400],
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(32.0)),
+                        minimumSize: const Size(100, 40),
+                      ),
+                      child: const Text(
+                        'Sign In',
+                        style: TextStyle(fontFamily: 'LilitaOne', fontSize: 20),
+                      ),
+                      onPressed: () async {
+                        if (_formKey.currentState!.validate()) {
+                          dynamic result = await _auth
+                              .signInWithEmailAndPassword(email, password);
+                          if (result == null) {
+                            setState(() {
+                              error =
+                                  'Could not sign in with those credentials';
+                            });
+                          } else {
+                            // ignore: use_build_context_synchronously
+                            Navigator.pushNamed(context, '/home');
+                          }
+                        }
+                      })
+                  .animate(onPlay: (controller) => controller.repeat())
+                  .shakeX(delay: 1.seconds),
               const SizedBox(height: 12.0),
               Text(
                 error,

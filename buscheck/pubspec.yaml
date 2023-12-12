@@ -47,6 +47,7 @@ dependencies:
   geolocator: ^10.1.0
   flutter_rating_bar: ^4.0.1
   permission_handler: ^11.0.1
+  flutter_animate: ^4.3.0
   
 
 dev_dependencies:
