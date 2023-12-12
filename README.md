@@ -14,9 +14,12 @@ A very useful application for bus tracking and route finding.
 
 • Ticket collector alert ✅ 
 
+• Search for busses and stops ✅
+
 • Route finding - Under construction ⚠️ 
 
 • Bus tracking - Under construction ⚠️ 
+
 
 ## Requirements:
  
