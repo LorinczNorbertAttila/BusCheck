@@ -7,7 +7,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:provider/provider.dart';
 
-// Class TimeService  give time to markel 
+// Class TimeService  give time to markel
 class TimeService {
   int currentTime = 5;
 
@@ -38,10 +38,10 @@ class MapData with ChangeNotifier {
   }
 }
 
-
 class MapScreen extends StatefulWidget {
-   final VoidCallback addUserTimeCallback;
-  const MapScreen({Key? key, required this.addUserTimeCallback}) : super(key: key);
+  final VoidCallback addUserTimeCallback;
+  const MapScreen({Key? key, required this.addUserTimeCallback})
+      : super(key: key);
 
   @override
   MapScreenState createState() => MapScreenState();
@@ -53,7 +53,7 @@ class MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
   GoogleMapController? mapController;
   Position? currentPosition;
   TimeService timeService = TimeService();
-  List<String?> busStopNames = []; 
+  List<String?> busStopNames = [];
   Set<Marker> markers = {};
   bool showUserTimeMarker = false;
   late String _darkMapStyle;
@@ -63,7 +63,7 @@ class MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
     _addUserTime();
   }
 
-   List<LatLng?> busStopLocations = [];
+  List<LatLng?> busStopLocations = [];
   Timer? timer;
 
   @override
@@ -83,25 +83,35 @@ class MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
           await FirebaseFirestore.instance.collection('Bus stops').get();
 
       if (snapshot.docs.isNotEmpty) {
-        final List<LatLng?> busStopLocations = snapshot.docs.map((doc) {
-          try {
-            final double? latitude = doc['Latitude'] != null ? double.tryParse(doc['Latitude'] as String) : null;
-            final double? longitude = doc['Longitude'] != null ? double.tryParse(doc['Longitude'] as String) : null;
-            final String name = doc['Name'] != null ? doc['Name'] as String : "";
+        final List<LatLng?> busStopLocations = snapshot.docs
+            .map((doc) {
+              try {
+                final double? latitude = doc['Latitude'] != null
+                    ? double.tryParse(doc['Latitude'] as String)
+                    : null;
+                final double? longitude = doc['Longitude'] != null
+                    ? double.tryParse(doc['Longitude'] as String)
+                    : null;
+                final String name =
+                    doc['Name'] != null ? doc['Name'] as String : "";
 
-            if (latitude != null && longitude != null && name.isNotEmpty) {
-              print('Buszmegálló szélessége: $latitude, hosszúsága: $longitude, Név: $name');
-              busStopNames.add(name);
-              return LatLng(latitude, longitude);
-            } else {
-              print('Missing or invalid data in the Firestore document: $doc');
-              return null;
-            }
-          } catch (e) {
-            print('Error processing Firestore data: $e');
-            return null;
-          }
-        }).where((location) => location != null).toList();
+                if (latitude != null && longitude != null && name.isNotEmpty) {
+                  print(
+                      'Buszmegálló szélessége: $latitude, hosszúsága: $longitude, Név: $name');
+                  busStopNames.add(name);
+                  return LatLng(latitude, longitude);
+                } else {
+                  print(
+                      'Missing or invalid data in the Firestore document: $doc');
+                  return null;
+                }
+              } catch (e) {
+                print('Error processing Firestore data: $e');
+                return null;
+              }
+            })
+            .where((location) => location != null)
+            .toList();
 
         print('Buszmegállók pozíciói: $busStopLocations');
 
@@ -117,7 +127,7 @@ class MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
     }
   }
 
-   void addControllerTimeMarker() {
+  void addControllerTimeMarker() {
     if (showUserTimeMarker && timeService.currentTime > 0) {
       markers.add(
         Marker(
@@ -138,7 +148,6 @@ class MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
     }
   }
 
-
   Future _loadMapStyles() async {
     _darkMapStyle =
         await rootBundle.loadString('lib/assets/map_styles/dark.json');
@@ -150,6 +159,7 @@ class MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
     final controller = await _controller.future;
     // ignore: use_build_context_synchronously
     final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+    // ignore: deprecated_member_use
     final theme = WidgetsBinding.instance.window.platformBrightness;
     if (themeProvider.themeMode == ThemeMode.dark || theme == Brightness.dark) {
       await controller.setMapStyle(_darkMapStyle);
@@ -219,41 +229,39 @@ class MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
   // Operations after map creation
   void _onMapCreated(GoogleMapController controller) {
     setState(() {
-  
-     _controller.complete(controller);
-
+      _controller.complete(controller);
     });
   }
 
 // Add or update user time
- void _addUserTime() {
-  setState(() {
-    if (!showUserTimeMarker) {
-      showUserTimeMarker = true;
-      _updateMarkers();
+  void _addUserTime() {
+    setState(() {
+      if (!showUserTimeMarker) {
+        showUserTimeMarker = true;
+        _updateMarkers();
 
-      timer = Timer.periodic(const Duration(minutes: 1), (timer) {
-        if (timeService.currentTime <= 0) {
-          showUserTimeMarker = false;
-          _updateMarkers();
-          timer.cancel();
-        } else {
-          timeService.currentTime -= 1;
-          _updateMarkers();
-        }
-      });
+        timer = Timer.periodic(const Duration(minutes: 1), (timer) {
+          if (timeService.currentTime <= 0) {
+            showUserTimeMarker = false;
+            _updateMarkers();
+            timer.cancel();
+          } else {
+            timeService.currentTime -= 1;
+            _updateMarkers();
+          }
+        });
 
-      // Call the new method to add the "ControllerTime" marker
-      addControllerTimeMarker();
-    } else {
-      timeService.addTime();
-      _updateMarkers();
-    }
-  });
+        // Call the new method to add the "ControllerTime" marker
+        addControllerTimeMarker();
+      } else {
+        timeService.addTime();
+        _updateMarkers();
+      }
+    });
 
-  // Call the callback provided by the parent widget
-  widget.addUserTimeCallback();
-}
+    // Call the callback provided by the parent widget
+    widget.addUserTimeCallback();
+  }
 
   // Update markers
   void _updateMarkers() {
@@ -301,18 +309,17 @@ class MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
   }
 
   void _getCurrentLocation() async {
-  GoogleMapController controller = await _controller.future;
+    GoogleMapController controller = await _controller.future;
 
-  // Check for location permission
-  if (await _checkLocationPermission()) {
-    try {
-      // Obtain the current position
-      Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
+    // Check for location permission
+    if (await _checkLocationPermission()) {
+      try {
+        // Obtain the current position
+        Position position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high,
+        );
 
-      // Check if the obtained position is not null
-      if (position != null) {
+        // Check if the obtained position is not null
         double lat = position.latitude;
         double long = position.longitude;
 
@@ -333,18 +340,13 @@ class MapScreenState extends State<MapScreen> with WidgetsBindingObserver {
           // Update markers after obtaining the current location
           _updateMarkers();
         });
-      } else {
-        // Handle the case where the position is null
-        print('Received null position');
+      } catch (e) {
+        // Handle errors while getting the location
+        print('Error getting location: $e');
       }
-    } catch (e) {
-      // Handle errors while getting the location
-      print('Error getting location: $e');
+    } else {
+      // Show a message or UI indicating that location permission is required
+      print('Location permission denied');
     }
-  } else {
-    // Show a message or UI indicating that location permission is required
-    print('Location permission denied');
   }
-}
-
 }

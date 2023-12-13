@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -6,6 +8,7 @@ class SearchBus extends StatefulWidget {
   const SearchBus({Key? key}) : super(key: key);
 
   @override
+  // ignore: library_private_types_in_public_api
   _SearchState createState() => _SearchState();
 }
 
@@ -43,7 +46,7 @@ class _SearchState extends State<SearchBus> {
         backgroundColor: Colors.cyan[400],
         actions: [
           IconButton(
-            icon: Icon(Icons.search),
+            icon: const Icon(Icons.search),
             onPressed: () => _showSearchDialog(context),
           ),
         ],
@@ -53,7 +56,7 @@ class _SearchState extends State<SearchBus> {
         builder: (context, snapshot) {
           // Check connection state and show appropriate UI
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator());
           }
 
           if (snapshot.hasError) {
@@ -79,12 +82,12 @@ class _SearchState extends State<SearchBus> {
                 builder: (BuildContext context,
                     AsyncSnapshot<DocumentSnapshot> busSnapshot) {
                   if (busSnapshot.connectionState == ConnectionState.waiting) {
-                    return SizedBox
+                    return const SizedBox
                         .shrink(); // Don't show anything while still loading
                   }
 
                   if (busSnapshot.hasError || busSnapshot.data == null) {
-                    return SizedBox
+                    return const SizedBox
                         .shrink(); // Don't show anything if there's an error or no data
                   }
 
@@ -110,11 +113,13 @@ class _SearchState extends State<SearchBus> {
       future: _hasQuery(busId, busStopsReferences, searchQuery),
       builder: (BuildContext context, AsyncSnapshot<bool> hasQuerySnapshot) {
         if (hasQuerySnapshot.connectionState == ConnectionState.waiting) {
-          return SizedBox.shrink(); // Don't show anything while still loading
+          return const SizedBox
+              .shrink(); // Don't show anything while still loading
         }
 
         if (hasQuerySnapshot.hasError) {
-          return SizedBox.shrink(); // Don't show anything if there's an error
+          return const SizedBox
+              .shrink(); // Don't show anything if there's an error
         }
 
         var hasQuery = hasQuerySnapshot.data ?? false;
@@ -155,7 +160,7 @@ class _SearchState extends State<SearchBus> {
             ),
           );
         } else {
-          return SizedBox
+          return const SizedBox
               .shrink(); // Return an empty widget if there's no match
         }
       },
@@ -171,10 +176,10 @@ class _SearchState extends State<SearchBus> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Search Bus by Name or Stop'),
+          title: const Text('Search Bus by Name or Stop'),
           content: Column(
             children: [
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               TextField(
                 controller: searchController,
                 onChanged: (value) {
@@ -197,7 +202,7 @@ class _SearchState extends State<SearchBus> {
                 // Perform the search
                 await _performSearch();
               },
-              child: Text('OK'),
+              child: const Text('OK'),
             ),
             TextButton(
               onPressed: () {
@@ -205,7 +210,7 @@ class _SearchState extends State<SearchBus> {
                 _clearSearch();
                 Navigator.of(context).pop();
               },
-              child: Text('Cancel'),
+              child: const Text('Cancel'),
             ),
           ],
         );
@@ -293,7 +298,7 @@ class _SearchState extends State<SearchBus> {
       // If no match is found, display the message
       ScaffoldMessenger.of(context).removeCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('No matching results found.'),
         ),
       );
