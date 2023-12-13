@@ -113,7 +113,7 @@ class _HomeState extends State<Home> {
                           context,
                           MaterialPageRoute(
                               builder: (context) =>
-                                  SearchBus()), // Itt helyettesítsd be a saját kereső osztályodat
+                                  const SearchBus()), // Itt helyettesítsd be a saját kereső osztályodat
                         );
                       },
                       backgroundColor: Colors.cyan[400],

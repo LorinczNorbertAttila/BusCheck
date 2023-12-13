@@ -105,7 +105,7 @@ class _BusListState extends State<BusList> {
                                       builder: (context, ratingSnapshot) {
                                         if (ratingSnapshot.connectionState ==
                                             ConnectionState.waiting) {
-                                          return CircularProgressIndicator();
+                                          return const CircularProgressIndicator();
                                         } else if (ratingSnapshot.hasError) {
                                           return Text(
                                               'Error: ${ratingSnapshot.error}');
@@ -243,7 +243,7 @@ class _BusListState extends State<BusList> {
                                             if (ratingSnapshot
                                                     .connectionState ==
                                                 ConnectionState.waiting) {
-                                              return CircularProgressIndicator();
+                                              return const CircularProgressIndicator();
                                             } else if (ratingSnapshot
                                                 .hasError) {
                                               return Text(
