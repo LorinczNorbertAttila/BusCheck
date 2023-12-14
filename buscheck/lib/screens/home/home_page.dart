@@ -22,7 +22,7 @@ class _HomeState extends State<Home> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('User time added!'),
+        content: Text('An inspector is present!'),
       ),
     );
   }
